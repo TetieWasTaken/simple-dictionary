@@ -1,6 +1,8 @@
 interface Phonetics {
   text: string;
   audio?: string;
+  sourceUrl?: string;
+  license?: License;
 }
 
 export interface Definition {
@@ -16,10 +18,17 @@ interface Meaning {
   definitions: Definition[];
 }
 
+export interface License {
+  name: string;
+  url: string;
+}
+
 export interface DictionaryEntry {
   word: string;
   phonetic: string;
   phonetics: Phonetics[];
   origin: string;
   meanings: Meaning[];
+  license: License;
+  source: string;
 }

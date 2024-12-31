@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 
 // types
-import { DictionaryEntry } from "@/types";
+import { DictionaryEntry, License } from "@/types";
 
 // constants
 import { LOOKUP_SYNONYMS } from "@/constants";
@@ -13,6 +13,8 @@ export default function Home() {
   const [word, setWord] = useState("");
   const [data, setData] = useState<DictionaryEntry>();
   const [lookupWord, setLookupWord] = useState("");
+  const [source, setSource] = useState("");
+  const [license, setLicense] = useState<License>();
 
   useEffect(() => {
     const randomSynonym =
@@ -27,7 +29,10 @@ export default function Home() {
       }`,
     );
     const json = await res.json();
+    console.log(json);
     setData(json[0]);
+    setSource(json[0].sourceUrls[0]);
+    setLicense(json[0].license);
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -100,9 +105,29 @@ export default function Home() {
       {data && (
         <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg bg-gray-700">
           <h2 className="text-3xl font-bold mb-2 text-white">{data.word}</h2>
-          {data.phonetic && (
-            <p className="text-lg italic text-gray-400 mb-4">
-              [{data.phonetic}]
+          {data.phonetic || data.phonetics
+            ? (
+              <p className="text-lg italic text-gray-400 mb-4">
+                {data.phonetic && <span className="mr-2">{data.phonetic}</span>}
+                {data.phonetics && data.phonetics[0] &&
+                  data.phonetics[0].audio &&
+                  (
+                    <button
+                      onClick={() => {
+                        const audio = new Audio(data.phonetics[0].audio);
+                        audio.play();
+                      }}
+                    >
+                      🔊
+                    </button>
+                  )}
+              </p>
+            )
+            : null}
+
+          {data.origin && (
+            <p className="text-lg text-gray-400 mb-4">
+              Origin: {data.origin}
             </p>
           )}
 
@@ -123,7 +148,7 @@ export default function Home() {
                       </p>
                     )}
                     <details className="mb-4">
-                      <summary className="text-lg text-white cursor-pointer">
+                      <summary className="text-lg text-white cursor-pointer mt-2">
                         More definitions available
                       </summary>
                       {meaning.definitions.slice(1).map((
@@ -160,6 +185,88 @@ export default function Home() {
                 )}
             </div>
           ))}
+
+          <hr className="my-4 border-gray-600" />
+
+          {source && (
+            <p className="text-sm text-gray-400">
+              Definition source:{" "}
+              <a
+                href={source}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {source}
+              </a>{" "}
+              <span className="text-gray-400">|</span>{" "}
+              <a
+                href="https://dictionaryapi.dev/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                dictionaryapi.dev
+              </a>
+            </p>
+          )}
+
+          {license && (
+            <p className="text-sm text-gray-400">
+              Definition license:{" "}
+              <a
+                href={license.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {license.name}
+              </a>
+            </p>
+          )}
+
+          <hr className="my-4 border-gray-600" />
+
+          {data.phonetics && (
+            <div>
+              {data.phonetics[0].sourceUrl && (
+                <p className="text-sm text-gray-400">
+                  Phonetics Source:{" "}
+                  <a
+                    href={data.phonetics[0].sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {data.phonetics[0].sourceUrl}
+                  </a>{" "}
+                  <span className="text-gray-400">|</span>{" "}
+                  <a
+                    href="https://dictionaryapi.dev/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    dictionaryapi.dev
+                  </a>
+                </p>
+              )}
+
+              {data.phonetics[0].license && (
+                <p className="text-sm text-gray-400">
+                  Phonetics License:{" "}
+                  <a
+                    href={data.phonetics[0].license.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {data.phonetics[0].license.name}
+                  </a>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>
