@@ -32,7 +32,7 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-gray-800 min-h-screen flex justify-center items-center">
+    <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center p-8 rounded-lg shadow-lg bg-gray-700">
         <h2 className="text-2xl font-semibold mb-4 text-white">
           Simple Dictionary
@@ -48,30 +48,55 @@ export default function Home() {
       </div>
 
       {data && (
-        <div className="mt-8 p-8 rounded-lg shadow-lg bg-gray-700">
-          <h2 className="text-2xl font-semibold mb-4 text-white">
-            {data.word}
-          </h2>
-          <p className="text-lg text-gray-300">{data.phonetic}</p>
-          <ul className="list-disc list-inside text-gray-300 mt-4">
-            {data.meanings.map((meaning, index) => (
-              <li key={index} className="mb-4">
-                <h3 className="text-xl font-semibold text-white">
-                  {meaning.partOfSpeech}
-                </h3>
-                <ul className="list-disc list-inside text-gray-300 mt-2">
-                  {meaning.definitions.map((definition, index) => (
-                    <li key={index} className="mb-2">
+        <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg bg-gray-700">
+          <h2 className="text-3xl font-bold mb-2 text-white">{data.word}</h2>
+          {data.phonetic && (
+            <p className="text-lg italic text-gray-400 mb-4">
+              [{data.phonetic}]
+            </p>
+          )}
+
+          {data.meanings.map((meaning, index) => (
+            <div key={index} className="mb-6">
+              <h3 className="text-xl font-semibold text-blue-400">
+                {meaning.partOfSpeech}
+              </h3>
+              {meaning.definitions.length > 2
+                ? (
+                  <details className="mb-4">
+                    <summary className="text-lg text-white cursor-pointer">
+                      Multiple definitions available
+                    </summary>
+                    {meaning.definitions.map((definition, defIndex) => (
+                      <div key={defIndex} className="mt-2">
+                        <p className="text-lg text-white">
+                          {definition.definition}
+                        </p>
+                        {definition.example && (
+                          <p className="text-gray-400 mt-1">
+                            Example: {definition.example}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </details>
+                )
+                : (
+                  meaning.definitions.map((definition, defIndex) => (
+                    <div key={defIndex} className="mb-4">
                       <p className="text-lg text-white">
                         {definition.definition}
                       </p>
-                      <p className="text-gray-400">{definition.example}</p>
-                    </li>
-                  ))}
-                </ul>
-              </li>
-            ))}
-          </ul>
+                      {definition.example && (
+                        <p className="text-gray-400 mt-1">
+                          Example: {definition.example}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+            </div>
+          ))}
         </div>
       )}
     </div>
