@@ -12,10 +12,7 @@ import { DictionaryError } from "@/error";
 
 // server side
 import { getData } from "@/api";
-import Trie, { buildTrie, getAutoComplete } from "@/trie";
-
-// external libraries
-import { distance } from "fastest-levenshtein";
+import { buildTrie, getAutoComplete } from "@/trie";
 
 export default function Home() {
   const [word, setWord] = useState("");
@@ -24,7 +21,7 @@ export default function Home() {
   const [source, setSource] = useState("");
   const [license, setLicense] = useState<License>();
   const [error, setError] = useState<DictionaryError>();
-  const [autoCompleteWord, setAutoCompleteWord] = useState("");
+  const [autoCompleteWords, setAutoCompleteWords] = useState<string[]>([]);
 
   useEffect(() => {
     const randomSynonym =
@@ -71,22 +68,18 @@ export default function Home() {
       }
     } else if (e.key === "Tab") {
       e.preventDefault();
-      setWord(autoCompleteWord);
-      setAutoCompleteWord("");
+      setWord(autoCompleteWords[0]);
+      setAutoCompleteWords([]);
     }
   };
 
-  /*
   useEffect(() => {
-    const start = performance.now();
-    buildTrie("dictionary.txt");
-    const end = performance.now();
-    console.log("Time taken to build trie", end - start);
+    buildTrie();
   }, []);
-  */
 
   const autoComplete = async (word: string) => {
     if (word.length < 2) {
+      setAutoCompleteWords([]);
       return;
     }
 
@@ -98,10 +91,11 @@ export default function Home() {
     console.log("Auto complete word", autoCompleteWordResult);
 
     if (!autoCompleteWordResult) {
+      setAutoCompleteWords([]);
       return;
     }
 
-    setAutoCompleteWord(autoCompleteWordResult);
+    setAutoCompleteWords(autoCompleteWordResult);
   };
 
   return (
@@ -146,6 +140,7 @@ export default function Home() {
               }}
               onKeyDown={handleKeyDown}
               style={{ minWidth: "200px" }}
+              autoComplete="off"
             />
             <button
               type="submit"
@@ -164,15 +159,21 @@ export default function Home() {
           </div>
         </form>
 
-        {autoCompleteWord && (
+        {autoCompleteWords && autoCompleteWords.length > 0 && (
           <div className="mt-2 text-sm text-gray-400">
-            Did you mean:{" "}
-            <button
-              className="underline"
-              onClick={() => setWord(autoCompleteWord)}
-            >
-              {autoCompleteWord}
-            </button>
+            Did you mean: {autoCompleteWords.map((word, index) => (
+              <span
+                key={index}
+                className="cursor-pointer text-blue-400 hover:underline"
+                onClick={() => {
+                  setWord(word);
+                  setAutoCompleteWords([]);
+                }}
+              >
+                {word}
+                {index < autoCompleteWords.length - 1 && ", "}
+              </span>
+            ))}
           </div>
         )}
 

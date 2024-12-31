@@ -11,24 +11,6 @@ class TrieNode {
     this.children = new Map();
     this.isEnd = false;
   }
-
-  toJSON() {
-    return {
-      children: Array.from(this.children.entries()),
-      isEnd: this.isEnd,
-    };
-  }
-
-  static fromJSON(json: any) {
-    const node = new TrieNode();
-    node.isEnd = json.isEnd;
-    node.children = new Map(
-      json.children.map((
-        [key, value]: [string, any],
-      ) => [key, TrieNode.fromJSON(value)]),
-    );
-    return node;
-  }
 }
 
 class Trie {
@@ -36,16 +18,6 @@ class Trie {
 
   constructor() {
     this.root = new TrieNode();
-  }
-
-  toJSON() {
-    return this.root;
-  }
-
-  static fromJSON(json: any) {
-    const trie = new Trie();
-    trie.root = TrieNode.fromJSON(json);
-    return trie;
   }
 
   insert(word: string) {
@@ -65,44 +37,6 @@ class Trie {
     }
 
     node.isEnd = true;
-  }
-
-  search(word: string) {
-    let node = this.root;
-    for (const char of word) {
-      if (!node.children.has(char)) {
-        return false;
-      }
-
-      const nextNode = node.children.get(char);
-
-      if (!nextNode) {
-        return false;
-      }
-
-      node = nextNode;
-    }
-
-    return node.isEnd;
-  }
-
-  startsWith(prefix: string) {
-    let node = this.root;
-    for (const char of prefix) {
-      if (!node.children.has(char)) {
-        return false;
-      }
-
-      const nextNode = node.children.get(char);
-
-      if (!nextNode) {
-        return false;
-      }
-
-      node = nextNode;
-    }
-
-    return true;
   }
 
   private _getWords(node: TrieNode, prefix: string) {
@@ -174,16 +108,13 @@ class Trie {
 
 export default Trie;
 
-console.log("Building trie");
-const startPerformance = performance.now();
-const currentTrie = await buildTrie("dictionary.txt");
-const endPerformance = performance.now();
-console.log("Time taken to build trie", endPerformance - startPerformance);
+let currentTrie: Trie | undefined;
 
-export async function buildTrie(file: string) {
+export async function buildTrie() {
+  const startPerformance = performance.now();
   const trie = new Trie();
 
-  file = process.cwd() + "/src/" + file;
+  const file = process.cwd() + "/src/dictionary.txt";
 
   try {
     const data = await fs.readFile(file, "utf-8");
@@ -193,61 +124,40 @@ export async function buildTrie(file: string) {
       trie.insert(line.trim());
     }
 
-    /* await fs.writeFile(
-      process.cwd() + "/src/trie.json",
-      JSON.stringify(trie.toJSON()),
-      "utf-8",
-    ); */
-
-    return trie;
+    currentTrie = trie;
   } catch (err) {
     console.error(err);
   }
-}
 
-export async function loadTrie() {
-  try {
-    const data = await fs.readFile(process.cwd() + "/src/trie.json", "utf-8");
-    const json = JSON.parse(data);
-    return Trie.fromJSON(json);
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
+  const endPerformance = performance.now();
+
+  console.log("Time taken to build trie", endPerformance - startPerformance);
 }
 
 export async function getAutoComplete(word: string) {
-  const trieStart = performance.now();
-  //const trie = await loadTrie();
-  const trie = currentTrie;
-  const trieEnd = performance.now();
-
-  console.log("Time taken to load trie", trieEnd - trieStart);
-
-  if (!trie) {
+  if (!currentTrie) {
     return;
   }
 
   const start = performance.now();
-  const words = trie.getWordsByPrefix(word);
+  const words = currentTrie.getWordsByPrefix(word);
   const end = performance.now();
 
   console.log("Time taken to get words", end - start);
 
-  if (!words) {
+  if (!words || words.length === 0) {
+    console.log("No words found");
     return;
   }
 
   const closestStart = performance.now();
-  const closestWord = words.reduce((acc, curr) => {
-    if (distance(curr, word) < distance(acc, word)) {
-      return curr;
-    }
-
-    return acc;
-  });
+  const closestWords = words
+    .map((w) => ({ word: w, dist: distance(w, word) }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, 5)
+    .map((w) => w.word);
   const closestEnd = performance.now();
-  console.log("Time taken to get closest word", closestEnd - closestStart);
+  console.log("Time taken to get closest words", closestEnd - closestStart);
 
-  return closestWord;
+  return closestWords;
 }
