@@ -8,6 +8,14 @@ import { DictionaryEntry, License } from "@/types";
 
 // constants
 import { LOOKUP_SYNONYMS } from "@/constants";
+import { DictionaryError } from "@/error";
+
+// server side
+import { getData } from "@/api";
+import Trie, { buildTrie, getAutoComplete } from "@/trie";
+
+// external libraries
+import { distance } from "fastest-levenshtein";
 
 export default function Home() {
   const [word, setWord] = useState("");
@@ -15,6 +23,8 @@ export default function Home() {
   const [lookupWord, setLookupWord] = useState("");
   const [source, setSource] = useState("");
   const [license, setLicense] = useState<License>();
+  const [error, setError] = useState<DictionaryError>();
+  const [autoCompleteWord, setAutoCompleteWord] = useState("");
 
   useEffect(() => {
     const randomSynonym =
@@ -23,16 +33,33 @@ export default function Home() {
   }, []);
 
   const fetchData = async (word: string) => {
-    const res = await fetch(
-      `https://api.dictionaryapi.dev/api/v2/entries/en/${
-        encodeURIComponent(word)
-      }`,
-    );
-    const json = await res.json();
-    console.log(json);
-    setData(json[0]);
-    setSource(json[0].sourceUrls[0]);
-    setLicense(json[0].license);
+    setError(undefined);
+
+    try {
+      const res = await getData(word);
+
+      console.log(res);
+      setData(res[0]);
+      setSource(res[0].sourceUrls[0]);
+      setLicense(res[0].license);
+    } catch (error) {
+      if (error instanceof DictionaryError) {
+        console.log("error instance of DictionaryError");
+
+        setData(undefined);
+        setSource("");
+        setLicense(undefined);
+        setError(error);
+        return;
+      }
+
+      console.log("error not instance of DictionaryError");
+      console.log(typeof error);
+      console.log(error.constructor.name);
+      console.log(error);
+
+      console.error(error);
+    }
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -42,24 +69,56 @@ export default function Home() {
       } catch (error) {
         console.error(error);
       }
+    } else if (e.key === "Tab") {
+      e.preventDefault();
+      setWord(autoCompleteWord);
+      setAutoCompleteWord("");
     }
+  };
+
+  /*
+  useEffect(() => {
+    const start = performance.now();
+    buildTrie("dictionary.txt");
+    const end = performance.now();
+    console.log("Time taken to build trie", end - start);
+  }, []);
+  */
+
+  const autoComplete = async (word: string) => {
+    if (word.length < 2) {
+      return;
+    }
+
+    const start = performance.now();
+    const autoCompleteWordResult = await getAutoComplete(word);
+    const end = performance.now();
+    console.log("Time taken to get auto complete", end - start);
+
+    console.log("Auto complete word", autoCompleteWordResult);
+
+    if (!autoCompleteWordResult) {
+      return;
+    }
+
+    setAutoCompleteWord(autoCompleteWordResult);
   };
 
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="flex flex-col items-center p-8 rounded-lg shadow-lg bg-gray-700">
-        <h2 className="text-2xl font-semibold mb-4 text-white">
+      <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">
+        <h2 className="text-3xl font-semibold mb-6 text-white">
           Simple Dictionary
         </h2>
 
-        <form>
-          <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">
+        <form className="w-full">
+          <label className="mb-2 text-sm font-medium sr-only text-white">
             Search
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
               <svg
-                className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                className="w-5 h-5 text-gray-400"
                 aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -77,16 +136,20 @@ export default function Home() {
             <input
               type="search"
               id="search"
-              className="block w-full p-4 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              className="block w-full p-6 ps-12 text-lg border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 transition-transform duration-300"
               placeholder="Search"
               required
               value={word}
-              onChange={(e) => setWord(e.target.value)}
+              onChange={async (e) => {
+                setWord(e.target.value);
+                await autoComplete(e.target.value);
+              }}
               onKeyDown={handleKeyDown}
+              style={{ minWidth: "200px" }}
             />
             <button
               type="submit"
-              className="text-white absolute end-2.5 bottom-2.5 focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-4 py-2 bg-blue-600 hover:bg-blue-700 focus:ring-blue-800"
+              className="absolute end-2.5 bottom-2.5 text-white font-medium rounded-lg text-lg px-6 py-3 bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800"
               onClick={async (e) => {
                 e.preventDefault();
                 try {
@@ -100,6 +163,25 @@ export default function Home() {
             </button>
           </div>
         </form>
+
+        {autoCompleteWord && (
+          <div className="mt-2 text-sm text-gray-400">
+            Did you mean:{" "}
+            <button
+              className="underline"
+              onClick={() => setWord(autoCompleteWord)}
+            >
+              {autoCompleteWord}
+            </button>
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg bg-red-700">
+            <h2 className="text-3xl font-bold mb-2 text-white">{error.type}</h2>
+            <p className="text-lg text-white">{error.message}</p>
+          </div>
+        )}
       </div>
 
       {data && (
@@ -227,7 +309,7 @@ export default function Home() {
 
           <hr className="my-4 border-gray-600" />
 
-          {data.phonetics && (
+          {data.phonetics[0] && (
             <div>
               {data.phonetics[0].sourceUrl && (
                 <p className="text-sm text-gray-400">
