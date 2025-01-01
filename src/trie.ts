@@ -177,14 +177,19 @@ export async function getAutoComplete(word: string) {
   let words: string[] = [];
 
   for (const trie of tries) {
-    const trieWords = trie.getWordsByPrefix(word);
+    const trieWords = trie.getWordsByPrefix(word).filter((w) => w !== word);
     words = [...new Set([...words, ...trieWords])];
     if (words.length >= 5) break;
 
     if (trie === minTrie) {
-      const allWords = trie.getWordsByPrefix("");
+      const allWords = trie.getWordsByPrefix("").filter((w) => w !== word);
       const closeWords = allWords.filter((w) => distance(w, word) <= 1);
       words = [...new Set([...words, ...closeWords])];
+
+      if (words.length == 0) {
+        const closeWords = allWords.filter((w) => distance(w, word) <= 2);
+        words = [...new Set([...words, ...closeWords])];
+      }
 
       if (words.length >= 5) break;
     }
