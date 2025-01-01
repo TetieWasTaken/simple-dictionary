@@ -191,7 +191,7 @@ export default function Home() {
                 {word}
                 {index < autoCompleteWords.words.length - 1 && ", "}
               </span>
-            ))} ({autoCompleteWords.performance}ms)
+            ))} ({autoCompleteWords.performance.toFixed(3)}ms)
           </div>
         )}
 
