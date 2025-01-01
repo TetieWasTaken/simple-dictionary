@@ -24,6 +24,17 @@ export default function Home() {
   const [autoCompleteWords, setAutoCompleteWords] = useState<
     AutocompleteResult | null
   >(null);
+  const [openedIndex, setOpenedIndex] = useState<string[]>([]);
+
+  const toggleOpen = (id: string) => {
+    if (openedIndex.includes(id)) {
+      setOpenedIndex(openedIndex.filter((index) => index !== id));
+    } else {
+      setOpenedIndex([...openedIndex, id]);
+    }
+  };
+
+  const isOpen = (id: string) => openedIndex.includes(id);
 
   useEffect(() => {
     const randomSynonym =
@@ -203,10 +214,10 @@ export default function Home() {
 
       {data && (
         <>
-          {data.map((data, index) => (
+          {data.map((data, defIndex) => (
             <div
               className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg bg-gray-700"
-              key={index}
+              key={defIndex}
             >
               <h2 className="text-3xl font-bold mb-2 text-white">
                 {data.word}
@@ -285,34 +296,50 @@ export default function Home() {
                             </span>
                           </p>
                         )}
-                        <details className="mb-4">
-                          <summary className="text-lg text-white cursor-pointer mt-2">
-                            {meaning.definitions.length - 1}{"  "}More
+                        <div className="mb-4">
+                          <button
+                            onClick={() => toggleOpen(`${index}-${defIndex}`)}
+                            className="text-lg text-white cursor-pointer mt-2 focus:outline-none"
+                          >
+                            {meaning.definitions.length - 1} More
                             {meaning.definitions.length > 2
                               ? " definitions "
                               : " definition "}
                             available
-                          </summary>
-                          {meaning.definitions.slice(1).map((
-                            definition,
-                            defIndex,
-                          ) => (
-                            <div key={defIndex} className="mt-2">
-                              <hr className="my-2 border-gray-600" />
-                              <p className="text-lg text-white">
-                                {decodeHTML(definition.definition)}
-                              </p>
-                              {definition.example && (
-                                <p className="text-gray-400 mt-1">
-                                  Example:{" "}
-                                  <span className="italic">
-                                    {decodeHTML(definition.example)}
-                                  </span>
+                          </button>
+                          <div
+                            className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                              isOpen(`${index}-${defIndex}`)
+                                ? "max-h-screen opacity-100"
+                                : "max-h-0 opacity-0"
+                            }`}
+                            style={{
+                              maxHeight: isOpen(`${index}-${defIndex}`)
+                                ? `1000px`
+                                : "0",
+                            }}
+                          >
+                            {meaning.definitions.slice(1).map((
+                              definition,
+                              defIndex,
+                            ) => (
+                              <div key={defIndex} className="mt-2">
+                                <hr className="my-2 border-gray-600" />
+                                <p className="text-lg text-white">
+                                  {decodeHTML(definition.definition)}
                                 </p>
-                              )}
-                            </div>
-                          ))}
-                        </details>
+                                {definition.example && (
+                                  <p className="text-gray-400 mt-1">
+                                    Example:{" "}
+                                    <span className="italic">
+                                      {decodeHTML(definition.example)}
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </>
                     )
                     : (
