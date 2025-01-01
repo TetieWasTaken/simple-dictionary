@@ -113,6 +113,14 @@ const medTrie: Trie = new Trie();
 const maxTrie: Trie = new Trie();
 
 export async function buildTrie() {
+  if (
+    minTrie.root.children.size > 0 && medTrie.root.children.size > 0 &&
+    maxTrie.root.children.size > 0
+  ) {
+    console.log("Trie already built");
+    return;
+  }
+
   const startPerformance = performance.now();
 
   const files = [

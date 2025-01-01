@@ -2,6 +2,7 @@
 
 import { DictionaryError, ErrorType } from "./error";
 import type { DictionaryEntry, WikitionaryEntry } from "./types";
+import { WIKITIONARY_RATE_LIMIT } from "./constants";
 
 const removeHTMLTags = (text: string) => {
   return text.replace(/<[^>]*>/g, "");
@@ -56,30 +57,58 @@ const parseWiktionaryData = (
   }
 
   meanings.sort((a, b) => {
-    if (
-      a.meanings[0].language === "English" &&
-      b.meanings[0].language !== "English"
-    ) return -1;
-    if (
-      a.meanings[0].language !== "English" &&
-      b.meanings[0].language === "English"
-    ) return 1;
+    const langA = a.meanings[0].language;
+    const langB = b.meanings[0].language;
+
+    if (langA === "English" && langB !== "English") return -1;
+    if (langA !== "English" && langB === "English") return 1;
+
+    if (langA === "Scots" && langB !== "Scots") return -1;
+    if (langA !== "Scots" && langB === "Scots") return 1;
+
     return 0;
   });
 
   return meanings;
 };
 
+let requestCount = 0;
+let lastReset = Date.now();
+
+const rateLimit = async () => {
+  if (requestCount >= WIKITIONARY_RATE_LIMIT) {
+    const now = Date.now();
+    const timePassed = now - lastReset;
+
+    if (timePassed < 1000) {
+      console.log(`Rate limit reached, waiting for ${1000 - timePassed}ms`);
+      await new Promise((resolve) => setTimeout(resolve, 1000 - timePassed));
+    }
+
+    lastReset = Date.now();
+    requestCount = 0;
+  }
+
+  requestCount++;
+};
+
 const fetchFromWikitionary = async (
   word: string,
 ): Promise<DictionaryEntry[]> => {
-  // todo: 200/s rate limit & unique user agent, redirect parameter
+  await rateLimit();
+
+  // todo: test 200/s rate limit, set user agent to repo, redirect parameter
   const res = await fetch(
     `https://en.wiktionary.org/api/rest_v1/page/definition/${
       encodeURIComponent(
         word,
       )
     }`,
+    {
+      headers: {
+        "User-Agent": "https://github.com/TetieWasTaken",
+      },
+    },
   );
 
   if (!res.ok) {

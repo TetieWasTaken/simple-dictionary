@@ -14,6 +14,9 @@ import { DictionaryError } from "@/error";
 import { getData } from "@/api";
 import { buildTrie, getAutoComplete } from "@/trie";
 
+// external libraries
+import { RiArrowDropDownLine } from "react-icons/ri";
+
 export default function Home() {
   const [word, setWord] = useState("");
   const [data, setData] = useState<DictionaryEntry[]>();
@@ -56,6 +59,7 @@ export default function Home() {
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
     } catch (error) {
+      // todo: fix error handling
       if (error instanceof DictionaryError) {
         console.log("error instance of DictionaryError");
 
@@ -124,7 +128,7 @@ export default function Home() {
     return text.replace(/:$/, "");
   };
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies
+  // todo: animations, effects, loading states, optimisations, merge etymologies, server side global logs, tests
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">
@@ -301,11 +305,14 @@ export default function Home() {
                             onClick={() => toggleOpen(`${index}-${defIndex}`)}
                             className="text-lg text-white cursor-pointer mt-2 focus:outline-none"
                           >
-                            {meaning.definitions.length - 1} More
-                            {meaning.definitions.length > 2
-                              ? " definitions "
-                              : " definition "}
-                            available
+                            <span className="inline-flex items-center">
+                              <RiArrowDropDownLine />
+                              {meaning.definitions.length - 1} More
+                              {meaning.definitions.length > 2
+                                ? " definitions "
+                                : " definition "}
+                              available
+                            </span>
                           </button>
                           <div
                             className={`transition-all duration-300 ease-in-out overflow-hidden ${

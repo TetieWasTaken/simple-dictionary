@@ -31,3 +31,5 @@ export const LOOKUP_SYNONYMS = [
   "peruse",
   "scan",
 ];
+
+export const WIKITIONARY_RATE_LIMIT = 200;
