@@ -40,12 +40,8 @@ export default function Home() {
       const res = await getData(word);
 
       console.log(res);
-      if (res[0].isManualSearch) {
-        setData(res);
-      } else {
-        setData([res[0]]);
-      }
 
+      setData(res);
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
     } catch (error) {
@@ -112,7 +108,9 @@ export default function Home() {
 
   const decodeHTML = (input: string) => {
     const doc = new DOMParser().parseFromString(input, "text/html");
-    return doc.documentElement.textContent;
+    const text = doc.documentElement.textContent;
+    if (!text) return input;
+    return text.replace(/:$/, "");
   };
 
   // todo: animations, effects, loading states, optimisations
