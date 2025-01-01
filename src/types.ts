@@ -17,7 +17,9 @@ export interface Definition {
 
 interface Meaning {
   partOfSpeech: string;
+  antonyms: string[];
   definitions: Definition[];
+  synonyms: string[];
   language?: string;
 }
 

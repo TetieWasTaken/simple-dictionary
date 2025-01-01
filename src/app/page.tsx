@@ -34,7 +34,7 @@ export default function Home() {
   const fetchData = async (word: string) => {
     setError(undefined);
 
-    // todo: if word is already in data, don't fetch again
+    // todo: if word is already in data, don't fetch again & word sanitisation
 
     try {
       const res = await getData(word);
@@ -113,7 +113,7 @@ export default function Home() {
     return text.replace(/:$/, "");
   };
 
-  // todo: animations, effects, loading states, optimisations
+  // todo: animations, effects, loading states, optimisations, merge etymologies
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">
@@ -258,12 +258,40 @@ export default function Home() {
                         {meaning.definitions[0].example && (
                           <p className="text-gray-400 mt-1">
                             Example:{" "}
-                            {decodeHTML(meaning.definitions[0].example)}
+                            <span className="italic">
+                              {decodeHTML(meaning.definitions[0].example)}
+                            </span>
+                          </p>
+                        )}
+                        {meaning.definitions[0].synonyms.length > 0 && (
+                          <p className="text-base text-blue-400">
+                            {meaning.definitions[0].synonyms.length > 1
+                              ? "Synonyms"
+                              : "Synonym"}
+                            :{" "}
+                            <span className="text-gray-400 italic">
+                              {meaning.definitions[0].synonyms.join(", ")}
+                            </span>
+                          </p>
+                        )}
+                        {meaning.definitions[0].antonyms.length > 0 && (
+                          <p className="text-base text-blue-400">
+                            {meaning.definitions[0].antonyms.length > 1
+                              ? "Antonyms"
+                              : "Antonym"}
+                            :{" "}
+                            <span className="text-gray-400 italic">
+                              {meaning.definitions[0].antonyms.join(", ")}
+                            </span>
                           </p>
                         )}
                         <details className="mb-4">
                           <summary className="text-lg text-white cursor-pointer mt-2">
-                            More definitions available
+                            {meaning.definitions.length - 1}{"  "}More
+                            {meaning.definitions.length > 2
+                              ? " definitions "
+                              : " definition "}
+                            available
                           </summary>
                           {meaning.definitions.slice(1).map((
                             definition,
@@ -276,7 +304,10 @@ export default function Home() {
                               </p>
                               {definition.example && (
                                 <p className="text-gray-400 mt-1">
-                                  Example: {decodeHTML(definition.example)}
+                                  Example:{" "}
+                                  <span className="italic">
+                                    {decodeHTML(definition.example)}
+                                  </span>
                                 </p>
                               )}
                             </div>
@@ -292,12 +323,60 @@ export default function Home() {
                           </p>
                           {definition.example && (
                             <p className="text-gray-400 mt-1">
-                              Example: {decodeHTML(definition.example)}
+                              Example:{" "}
+                              <span className="italic">
+                                {decodeHTML(definition.example)}
+                              </span>
+                            </p>
+                          )}
+                          {definition.synonyms.length > 0 && (
+                            <p className="text-base text-blue-400">
+                              {definition.synonyms.length > 1
+                                ? "Synonyms"
+                                : "Synonym"}
+                              :{" "}
+                              <span className="text-gray-400 italic">
+                                {definition.synonyms.join(", ")}
+                              </span>
+                            </p>
+                          )}
+                          {definition.antonyms.length > 0 && (
+                            <p className="text-base text-blue-400">
+                              {definition.antonyms.length > 1
+                                ? "Antonyms"
+                                : "Antonym"}
+                              :{" "}
+                              <span className="text-gray-400 italic">
+                                {definition.antonyms.join(", ")}
+                              </span>
                             </p>
                           )}
                         </div>
                       ))
                     )}
+                  {meaning.synonyms.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-base text-blue-400">
+                        {meaning.synonyms.length > 1 ? "Synonyms" : "Synonym"}:
+                        {" "}
+                        <span className="text-gray-400 italic">
+                          {meaning.synonyms.join(", ")}
+                        </span>
+                      </p>
+                    </div>
+                  )}
+
+                  {meaning.antonyms.length > 0 && (
+                    <div className="mb-4">
+                      <p className="text-base text-blue-400">
+                        {meaning.antonyms.length > 1 ? "Antonyms" : "Antonym"}:
+                        {" "}
+                        <span className="text-gray-400 italic">
+                          {meaning.antonyms.join(", ")}
+                        </span>
+                      </p>
+                    </div>
+                  )}
                 </div>
               ))}
 

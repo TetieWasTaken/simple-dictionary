@@ -37,7 +37,9 @@ const parseWiktionaryData = (
             origin: "",
             meanings: [{
               partOfSpeech: entry.partOfSpeech,
+              antonyms: [],
               language: entry.language,
+              synonyms: [],
               definitions,
             }],
             license: {
