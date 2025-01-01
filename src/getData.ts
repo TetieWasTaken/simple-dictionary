@@ -166,8 +166,6 @@ export const getData = async (word: string): Promise<DictionaryEntry[]> => {
     }
   }
 
-  return fetchFromWikitionary(word);
-
   const data = await res.json();
   return data;
 };
