@@ -108,56 +108,72 @@ class Trie {
 
 export default Trie;
 
-let currentTrie: Trie | undefined;
+let minTrie: Trie = new Trie();
+let medTrie: Trie = new Trie();
+let maxTrie: Trie = new Trie();
 
 export async function buildTrie() {
   const startPerformance = performance.now();
-  const trie = new Trie();
 
-  const file = process.cwd() + "/src/dictionary.txt";
+  const files = [
+    { filePath: "/src/10k_words.txt", trie: minTrie },
+    { filePath: "/src/100k_words.txt", trie: medTrie },
+    { filePath: "/src/530k_words.txt", trie: maxTrie },
+  ];
 
   try {
-    const data = await fs.readFile(file, "utf-8");
-    const lines = data.split("\n");
+    const fileContents = await Promise.all(
+      files.map(({ filePath }) =>
+        fs.readFile(process.cwd() + filePath, "utf-8")
+      ),
+    );
 
-    for (const line of lines) {
-      trie.insert(line.trim());
-    }
-
-    currentTrie = trie;
+    fileContents.forEach((content, index) => {
+      const lines = content.split("\n");
+      lines.forEach((line) => {
+        files[index].trie.insert(line);
+      });
+    });
   } catch (err) {
     console.error(err);
   }
 
   const endPerformance = performance.now();
-
   console.log("Time taken to build trie", endPerformance - startPerformance);
 }
 
 export async function getAutoComplete(word: string) {
-  if (!currentTrie) {
+  if (!word) {
     return;
   }
 
-  const start = performance.now();
-  const words = currentTrie.getWordsByPrefix(word);
-  const end = performance.now();
+  if (!minTrie && !medTrie && !maxTrie) {
+    console.log("Trie not built");
+    return;
+  }
 
-  console.log("Time taken to get words", end - start);
+  const perfStart = performance.now();
+  const tries = [minTrie, medTrie, maxTrie];
+  let words: string[] = [];
 
-  if (!words || words.length === 0) {
+  for (const trie of tries) {
+    const trieWords = trie.getWordsByPrefix(word);
+    words = [...new Set([...words, ...trieWords])];
+    if (words.length >= 5) break;
+  }
+
+  if (words.length === 0) {
     console.log("No words found");
     return;
   }
 
-  const closestStart = performance.now();
   const closestWords = words
     .map((w) => ({ word: w, dist: distance(w, word) }))
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 5)
     .map((w) => w.word);
-  const closestEnd = performance.now();
-  console.log("Time taken to get closest words", closestEnd - closestStart);
 
-  return closestWords;
+  const perfEnd = performance.now();
+
+  return { words: closestWords, performance: perfEnd - perfStart };
 }

@@ -16,6 +16,7 @@ export interface Definition {
 interface Meaning {
   partOfSpeech: string;
   definitions: Definition[];
+  language?: string;
 }
 
 export interface License {
@@ -31,4 +32,23 @@ export interface DictionaryEntry {
   meanings: Meaning[];
   license: License;
   source: string;
+  sourceUrls: string[];
+  isManualSearch?: boolean;
+}
+
+export interface AutocompleteResult {
+  words: string[];
+  performance: number;
+}
+
+interface WikitionaryDefinition {
+  definition: string;
+  parsedExamples?: Record<string, string>[];
+  examples?: string[];
+}
+
+export interface WikitionaryEntry {
+  partOfSpeech: string;
+  language: string;
+  definitions: WikitionaryDefinition[];
 }
