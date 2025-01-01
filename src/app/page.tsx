@@ -249,7 +249,7 @@ export default function Home() {
                       {meaning.language}
                     </p>
                   )}
-                  {meaning.definitions.length > 2
+                  {meaning.definitions.length > 1
                     ? (
                       <>
                         <p className="text-lg text-white">

@@ -53,6 +53,18 @@ const parseWiktionaryData = (
     }
   }
 
+  meanings.sort((a, b) => {
+    if (
+      a.meanings[0].language === "English" &&
+      b.meanings[0].language !== "English"
+    ) return -1;
+    if (
+      a.meanings[0].language !== "English" &&
+      b.meanings[0].language === "English"
+    ) return 1;
+    return 0;
+  });
+
   return meanings;
 };
 
