@@ -30,6 +30,7 @@ export default function Home() {
   >(null);
   const [openedIndex, setOpenedIndex] = useState<string[]>([]);
   const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
+  const [isFetching, setIsFetching] = useState(false);
 
   const toggleOpen = (id: string) => {
     log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
@@ -72,6 +73,7 @@ export default function Home() {
   }, []);
 
   const fetchData = async (word: string) => {
+    setIsFetching(true);
     setError(undefined);
     rawData.length > 0 && setRawData([]);
 
@@ -106,6 +108,8 @@ export default function Home() {
 
       console.error(error);
     }
+
+    setIsFetching(false);
   };
 
   const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -136,6 +140,8 @@ export default function Home() {
   }, []);
 
   const autoComplete = async (word: string) => {
+    if (isFetching) return;
+
     if (word.length < 2) {
       setAutoCompleteWords(null);
       return;
