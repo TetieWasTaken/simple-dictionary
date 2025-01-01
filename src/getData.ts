@@ -56,6 +56,7 @@ const parseWiktionaryData = (
             source: "Wikitionary",
             sourceUrls: [`https://en.wiktionary.org/wiki/${word}`],
             isManualSearch: true,
+            key,
           });
         }
       });
@@ -164,6 +165,8 @@ export const getData = async (word: string): Promise<DictionaryEntry[]> => {
       throw new DictionaryError(ErrorType.Failed);
     }
   }
+
+  return fetchFromWikitionary(word);
 
   const data = await res.json();
   return data;

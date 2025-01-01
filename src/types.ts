@@ -38,6 +38,7 @@ export interface DictionaryEntry {
   source: string;
   sourceUrls: string[];
   isManualSearch?: boolean;
+  key?: string;
 }
 
 export interface AutocompleteResult {
