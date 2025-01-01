@@ -2,7 +2,8 @@
 
 import { DictionaryError, ErrorType } from "./error";
 import type { DictionaryEntry, WikitionaryEntry } from "./types";
-import { WIKITIONARY_RATE_LIMIT } from "./constants";
+import { LOG_LEVEL, WIKITIONARY_RATE_LIMIT } from "./constants";
+import { log } from "./logger";
 
 const removeHTMLTags = (text: string) => {
   return text.replace(/<[^>]*>/g, "");
@@ -12,6 +13,11 @@ const parseWiktionaryData = (
   data: Record<string, WikitionaryEntry[]>,
   word: string,
 ): DictionaryEntry[] => {
+  log(
+    LOG_LEVEL.DEBUG,
+    `Parsing Wiktionary data for ${word}`,
+    "parseWiktionaryData()",
+  );
   const meanings: DictionaryEntry[] = [];
 
   for (const key in data) {
@@ -81,7 +87,11 @@ const rateLimit = async () => {
     const timePassed = now - lastReset;
 
     if (timePassed < 1000) {
-      console.log(`Rate limit reached, waiting for ${1000 - timePassed}ms`);
+      log(
+        LOG_LEVEL.WARN,
+        `Rate limit reached. Waiting for ${1000 - timePassed}ms`,
+        "rateLimit()",
+      );
       await new Promise((resolve) => setTimeout(resolve, 1000 - timePassed));
     }
 
@@ -95,6 +105,11 @@ const rateLimit = async () => {
 const fetchFromWikitionary = async (
   word: string,
 ): Promise<DictionaryEntry[]> => {
+  log(
+    LOG_LEVEL.INFO,
+    `Fetching data from Wiktionary for ${word}`,
+    "fetchFromWikitionary()",
+  );
   await rateLimit();
 
   // todo: test 200/s rate limit, set user agent to repo, redirect parameter
@@ -125,16 +140,25 @@ const fetchFromWikitionary = async (
 };
 
 export const getData = async (word: string): Promise<DictionaryEntry[]> => {
+  log(
+    LOG_LEVEL.INFO,
+    `Fetching data from dictionary API for ${word}`,
+    "getData()",
+  );
+
   const res = await fetch(
     `https://api.dictionaryapi.dev/api/v2/entries/en/${
       encodeURIComponent(word)
     }`,
   );
 
-  console.log(res);
-
   if (!res.ok) {
     if (res.statusText === "Not Found") {
+      log(
+        LOG_LEVEL.DEBUG,
+        `Word not found in dictionary API for ${word}`,
+        "getData()",
+      );
       return fetchFromWikitionary(word);
     } else {
       throw new DictionaryError(ErrorType.Failed);

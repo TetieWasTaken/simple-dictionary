@@ -2,6 +2,8 @@
 
 import { promises as fs } from "fs";
 import { distance } from "fastest-levenshtein";
+import { log } from "./logger";
+import { LOG_LEVEL } from "./constants";
 
 class TrieNode {
   children: Map<string, TrieNode>;
@@ -40,8 +42,6 @@ class Trie {
   }
 
   private _getWords(node: TrieNode, prefix: string) {
-    // console.log("Getting words with prefix", prefix);
-
     const words: string[] = [];
     if (node.isEnd) {
       words.push(prefix);
@@ -60,8 +60,6 @@ class Trie {
 
   /*
   private _getWords(node: TrieNode, prefix: string, maxResults: number = 10): string[] {
-    console.log("Getting words with prefix", prefix);
-
     const words: string[] = [];
     const stack: [TrieNode, string][] = [[node, prefix]];
 
@@ -85,7 +83,11 @@ class Trie {
   */
 
   getWordsByPrefix(prefix: string) {
-    // console.log("Getting words by prefix", prefix);
+    log(
+      LOG_LEVEL.DEBUG,
+      `Getting words with prefix ${prefix}`,
+      "Trie.getWordsByPrefix()",
+    );
 
     let node = this.root;
     for (const char of prefix) {
@@ -117,9 +119,11 @@ export async function buildTrie() {
     minTrie.root.children.size > 0 && medTrie.root.children.size > 0 &&
     maxTrie.root.children.size > 0
   ) {
-    console.log("Trie already built");
+    log(LOG_LEVEL.DEBUG, "Trie already built", "buildTrie()");
     return;
   }
+
+  log(LOG_LEVEL.INFO, "Building trie", "buildTrie()");
 
   const startPerformance = performance.now();
 
@@ -130,12 +134,14 @@ export async function buildTrie() {
   ];
 
   try {
+    log(LOG_LEVEL.DEBUG, "Reading files", "buildTrie()");
     const fileContents = await Promise.all(
       files.map(({ filePath }) =>
         fs.readFile(process.cwd() + filePath, "utf-8")
       ),
     );
 
+    log(LOG_LEVEL.DEBUG, "Inserting words into trie", "buildTrie()");
     fileContents.forEach((content, index) => {
       const lines = content.split("\n");
       lines.forEach((line) => {
@@ -143,11 +149,15 @@ export async function buildTrie() {
       });
     });
   } catch (err) {
-    console.error(err);
+    log(LOG_LEVEL.ERROR, `Error building trie: ${err}`, "buildTrie()");
   }
 
   const endPerformance = performance.now();
-  console.log("Time taken to build trie", endPerformance - startPerformance);
+  log(
+    LOG_LEVEL.DEBUG,
+    `Trie built in ${endPerformance - startPerformance}ms`,
+    "buildTrie()",
+  );
 }
 
 export async function getAutoComplete(word: string) {
@@ -156,9 +166,11 @@ export async function getAutoComplete(word: string) {
   }
 
   if (!minTrie && !medTrie && !maxTrie) {
-    console.log("Trie not built");
+    log(LOG_LEVEL.DEBUG, "Trie not built", "getAutoComplete()");
     return;
   }
+
+  log(LOG_LEVEL.DEBUG, `Getting autocomplete for ${word}`, "getAutoComplete()");
 
   const perfStart = performance.now();
   const tries = [minTrie, medTrie, maxTrie];
@@ -179,9 +191,10 @@ export async function getAutoComplete(word: string) {
   }
 
   if (words.length === 0) {
-    console.log("No words found");
     return;
   }
+
+  log(LOG_LEVEL.DEBUG, `Found ${words.length} words`, "getAutoComplete()");
 
   const closestWords = words
     .map((w) => ({ word: w, dist: distance(w, word) }))
@@ -190,6 +203,12 @@ export async function getAutoComplete(word: string) {
     .map((w) => w.word);
 
   const perfEnd = performance.now();
+
+  log(
+    LOG_LEVEL.DEBUG,
+    `Autocomplete found in ${perfEnd - perfStart}ms`,
+    "getAutoComplete()",
+  );
 
   return { words: closestWords, performance: perfEnd - perfStart };
 }

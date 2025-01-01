@@ -1,3 +1,5 @@
+import { LogLevel } from "./logger";
+
 export const LOOKUP_SYNONYMS = [
   "research",
   "find",
@@ -33,3 +35,10 @@ export const LOOKUP_SYNONYMS = [
 ];
 
 export const WIKITIONARY_RATE_LIMIT = 200;
+export enum LOG_LEVEL {
+  DEBUG,
+  INFO,
+  WARN,
+  ERROR,
+}
+export const ACTIVE_LOG_LEVEL = LOG_LEVEL.DEBUG;

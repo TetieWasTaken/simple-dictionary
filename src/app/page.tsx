@@ -7,12 +7,13 @@ import { useEffect, useState } from "react";
 import type { AutocompleteResult, DictionaryEntry, License } from "@/types";
 
 // constants
-import { LOOKUP_SYNONYMS } from "@/constants";
+import { LOG_LEVEL, LOOKUP_SYNONYMS } from "@/constants";
 import { DictionaryError } from "@/error";
 
 // server side
-import { getData } from "@/api";
+import { getData } from "@/getData";
 import { buildTrie, getAutoComplete } from "@/trie";
+import { log } from "@/logger";
 
 // external libraries
 import { RiArrowDropDownLine } from "react-icons/ri";
@@ -30,6 +31,8 @@ export default function Home() {
   const [openedIndex, setOpenedIndex] = useState<string[]>([]);
 
   const toggleOpen = (id: string) => {
+    log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
+
     if (openedIndex.includes(id)) {
       setOpenedIndex(openedIndex.filter((index) => index !== id));
     } else {
@@ -42,6 +45,11 @@ export default function Home() {
   useEffect(() => {
     const randomSynonym =
       LOOKUP_SYNONYMS[Math.floor(Math.random() * LOOKUP_SYNONYMS.length)];
+    log(
+      LOG_LEVEL.DEBUG,
+      `Setting lookup word to ${randomSynonym}`,
+      "useEffect()",
+    );
     setLookupWord(randomSynonym);
   }, []);
 
@@ -50,15 +58,19 @@ export default function Home() {
 
     // todo: if word is already in data, don't fetch again & word sanitisation
 
+    log(LOG_LEVEL.INFO, `Fetching data for ${word}`, "fetchData()");
+
     try {
       const res = await getData(word);
 
-      console.log(res);
+      // console.log(res);
 
       setData(res);
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
     } catch (error) {
+      log(LOG_LEVEL.ERROR, `Failed to fetch data for ${word}`, "fetchData()");
+
       // todo: fix error handling
       if (error instanceof DictionaryError) {
         console.log("error instance of DictionaryError");
@@ -85,11 +97,17 @@ export default function Home() {
       try {
         await fetchData(word);
       } catch (error) {
-        console.error(error);
+        log(
+          LOG_LEVEL.ERROR,
+          `Failed to fetch data for ${word}`,
+          "handleKeyDown()",
+        );
       }
     } else if (e.key === "Tab") {
       e.preventDefault();
       if (!autoCompleteWords) return;
+
+      log(LOG_LEVEL.DEBUG, "Tab pressed", "handleKeyDown()");
 
       setWord(autoCompleteWords.words[0]);
       setAutoCompleteWords(null);
@@ -109,14 +127,23 @@ export default function Home() {
     const start = performance.now();
     const autoCompleteWordResult = await getAutoComplete(word);
     const end = performance.now();
-    console.log("Time taken to get auto complete", end - start);
 
-    console.log("Auto complete word", autoCompleteWordResult);
+    log(
+      LOG_LEVEL.DEBUG,
+      `Auto complete took ${end - start}ms`,
+      "autoComplete()",
+    );
 
     if (!autoCompleteWordResult) {
       setAutoCompleteWords(null);
       return;
     }
+
+    log(
+      LOG_LEVEL.DEBUG,
+      `Auto complete words: ${autoCompleteWordResult.words}`,
+      "autoComplete()",
+    );
 
     setAutoCompleteWords(autoCompleteWordResult);
   };
@@ -128,7 +155,7 @@ export default function Home() {
     return text.replace(/:$/, "");
   };
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies, server side global logs, tests
+  // todo: animations, effects, loading states, optimisations, merge etymologies, tests
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">
@@ -181,7 +208,11 @@ export default function Home() {
                 try {
                   await fetchData(word);
                 } catch (error) {
-                  console.error(error);
+                  log(
+                    LOG_LEVEL.ERROR,
+                    `Failed to fetch data for ${word}`,
+                    "handleKeyDown()",
+                  );
                 }
               }}
             >
