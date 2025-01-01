@@ -34,6 +34,8 @@ export default function Home() {
   const fetchData = async (word: string) => {
     setError(undefined);
 
+    // todo: if word is already in data, don't fetch again
+
     try {
       const res = await getData(word);
 
@@ -113,6 +115,7 @@ export default function Home() {
     return doc.documentElement.textContent;
   };
 
+  // todo: animations, effects, loading states, optimisations
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
       <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">

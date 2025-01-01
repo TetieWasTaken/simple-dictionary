@@ -1,3 +1,5 @@
+// todo: check if all available fields are used
+
 interface Phonetics {
   text: string;
   audio?: string;

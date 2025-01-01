@@ -59,6 +59,7 @@ const parseWiktionaryData = (
 const fetchFromWikitionary = async (
   word: string,
 ): Promise<DictionaryEntry[]> => {
+  // todo: 200/s rate limit & unique user agent
   const res = await fetch(
     `https://en.wiktionary.org/api/rest_v1/page/definition/${
       encodeURIComponent(
