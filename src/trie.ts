@@ -108,9 +108,9 @@ class Trie {
 
 export default Trie;
 
-let minTrie: Trie = new Trie();
-let medTrie: Trie = new Trie();
-let maxTrie: Trie = new Trie();
+const minTrie: Trie = new Trie();
+const medTrie: Trie = new Trie();
+const maxTrie: Trie = new Trie();
 
 export async function buildTrie() {
   const startPerformance = performance.now();
@@ -160,6 +160,14 @@ export async function getAutoComplete(word: string) {
     const trieWords = trie.getWordsByPrefix(word);
     words = [...new Set([...words, ...trieWords])];
     if (words.length >= 5) break;
+
+    if (trie === minTrie) {
+      const allWords = trie.getWordsByPrefix("");
+      const closeWords = allWords.filter((w) => distance(w, word) <= 1);
+      words = [...new Set([...words, ...closeWords])];
+
+      if (words.length >= 5) break;
+    }
   }
 
   if (words.length === 0) {
