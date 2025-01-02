@@ -1,3 +1,5 @@
+import About from "@/contents/markdown/about.mdx";
+
 export default async function Info() {
   return (
     <div className="flex flex-col items-center justify-center h-full space-y-4 dark:bg-gray-800 bg-gray-200 min-h-screen p-4">
@@ -9,9 +11,9 @@ export default async function Info() {
           <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
             About
           </h2>
-          <p className="text-md dark:text-white text-gray-900">
-            Information about the dictionary
-          </p>
+          <div className="text-md dark:text-white text-gray-900">
+            <About />
+          </div>
         </div>
         <div className="flex flex-col items-center space-y-2 w-1/3 border-r border-gray-400">
           <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
