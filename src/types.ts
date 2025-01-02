@@ -55,3 +55,10 @@ export interface WikitionaryEntry {
   language: string;
   definitions: WikitionaryDefinition[];
 }
+
+export interface DictionaryErrorJSON {
+  error: boolean;
+  name: string;
+  message: string;
+  type: string;
+}

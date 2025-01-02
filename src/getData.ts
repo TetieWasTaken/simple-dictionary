@@ -1,7 +1,11 @@
 "use server";
 
-import { DictionaryError, ErrorType } from "./error";
-import type { DictionaryEntry, WikitionaryEntry } from "./types";
+import { DictionaryError, ErrorType, serialiseError } from "./error";
+import type {
+  DictionaryEntry,
+  DictionaryErrorJSON,
+  WikitionaryEntry,
+} from "./types";
 import { LOG_LEVEL, WIKITIONARY_RATE_LIMIT } from "./constants";
 import { log } from "./logger";
 
@@ -128,19 +132,42 @@ const fetchFromWikitionary = async (
   );
 
   if (!res.ok) {
-    throw new DictionaryError(ErrorType.Failed);
+    if (res.status === 404) {
+      log(
+        LOG_LEVEL.DEBUG,
+        `Word not found in Wiktionary for ${word}`,
+        "fetchFromWikitionary()",
+      );
+
+      throw new DictionaryError(ErrorType.NotFound);
+    } else {
+      log(
+        LOG_LEVEL.WARN,
+        `Status ${res.status} for Wiktionary request for ${word}`,
+        "fetchFromWikitionary()",
+      );
+      throw new DictionaryError(ErrorType.Failed);
+    }
   }
 
   const data = await res.json();
 
   if (!data) {
+    log(
+      LOG_LEVEL.WARN,
+      `No data found in Wiktionary for ${word}`,
+      "fetchFromWikitionary()",
+    );
+
     throw new DictionaryError(ErrorType.Failed);
   }
 
   return parseWiktionaryData(data, word);
 };
 
-export const getData = async (word: string): Promise<DictionaryEntry[]> => {
+export const getData = async (
+  word: string,
+): Promise<DictionaryEntry[] | DictionaryErrorJSON> => {
   log(
     LOG_LEVEL.INFO,
     `Fetching data from dictionary API for ${word}`,
@@ -160,9 +187,32 @@ export const getData = async (word: string): Promise<DictionaryEntry[]> => {
         `Word not found in dictionary API for ${word}`,
         "getData()",
       );
-      return fetchFromWikitionary(word);
+
+      try {
+        return (await fetchFromWikitionary(word));
+      } catch (error) {
+        if (error instanceof DictionaryError) {
+          if (error.type !== ErrorType.NotFound) {
+            log(
+              LOG_LEVEL.ERROR,
+              `Error fetching data from Wiktionary for ${word}: ${error.type}`,
+              "getData()",
+            );
+          }
+
+          return serialiseError(error);
+        } else {
+          log(
+            LOG_LEVEL.ERROR,
+            `Unknown error fetching data from Wiktionary for ${word}`,
+            "getData()",
+          );
+
+          return serialiseError(new DictionaryError(ErrorType.Failed));
+        }
+      }
     } else {
-      throw new DictionaryError(ErrorType.Failed);
+      return serialiseError(new DictionaryError(ErrorType.Failed));
     }
   }
 

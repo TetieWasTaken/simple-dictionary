@@ -8,7 +8,7 @@ import type { AutocompleteResult, DictionaryEntry, License } from "@/types";
 
 // constants
 import { LOG_LEVEL, LOOKUP_SYNONYMS } from "@/constants";
-import { DictionaryError } from "@/error";
+import { DictionaryError, ErrorType } from "@/error";
 
 // server side
 import { getData } from "@/getData";
@@ -74,9 +74,15 @@ export default function Home() {
     setLookupWord(randomSynonym);
   }, []);
 
+  const sanitiseInput = (input: string) =>
+    input.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
+
   const fetchData = async (word: string) => {
     setIsFetching(true);
     setError(undefined);
+
+    word = sanitiseInput(word);
+
     if (!rawData.some((entry) => entry.word === word)) {
       setRawData([]);
     } else {
@@ -91,36 +97,44 @@ export default function Home() {
     setOpenedIndex([]);
     setOpenedLanguages(["en"]);
 
-    // todo: if word is already in data, don't fetch again & word sanitisation
-
     log(LOG_LEVEL.INFO, `Fetching data for ${word}`, "fetchData()");
 
     try {
       const res = await getData(word);
 
+      console.log(res);
+
+      if ("error" in res) {
+        if (res.type !== ErrorType.NotFound) {
+          log(
+            LOG_LEVEL.ERROR,
+            `Failed to fetch data for ${word}: ${res.type}`,
+            "fetchData()",
+          );
+        }
+
+        setRawData([]);
+        setError(new DictionaryError(res.type as ErrorType));
+        return;
+      }
+
       setRawData(res);
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
     } catch (error) {
-      log(LOG_LEVEL.ERROR, `Failed to fetch data for ${word}`, "fetchData()");
+      log(
+        LOG_LEVEL.ERROR,
+        `Failed to fetch data for ${word}`,
+        "fetchData()",
+      );
 
-      // todo: fix error handling
-      if (error instanceof DictionaryError) {
-        console.log("error instance of DictionaryError");
-
-        setRawData([]);
-        setSource("");
-        setLicense(undefined);
-        setError(error);
-        return;
+      if (error instanceof Error) {
+        log(LOG_LEVEL.ERROR, error.message, "fetchData()");
+      } else {
+        log(LOG_LEVEL.ERROR, "Unknown error", "fetchData()");
       }
 
-      console.log("error not instance of DictionaryError");
-      console.log(typeof error);
-      console.log(error.constructor.name);
-      console.log(error);
-
-      console.error(error);
+      setError(new DictionaryError(ErrorType.Failed));
     }
 
     setIsFetching(false);
@@ -160,6 +174,8 @@ export default function Home() {
 
   const autoComplete = async (word: string) => {
     if (isFetching) return;
+
+    word = sanitiseInput(word);
 
     if (word.length < 2) {
       setAutoCompleteWords(null);
