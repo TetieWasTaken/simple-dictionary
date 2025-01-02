@@ -10,7 +10,7 @@ interface Phonetics {
 export interface Definition {
   definition: string; // | object?
   example: string;
-  examples?: string[];
+  examples?: string[]; // unused
   synonyms: string[];
   antonyms: string[];
 }
@@ -36,7 +36,7 @@ export interface DictionaryEntry {
   meanings: Meaning[];
   license: License;
   source: string;
-  sourceUrls: string[];
+  sourceUrls: string[]; // unused (too: filter out sources that seem unrelated (cat/catamaran))
   isManualSearch?: boolean;
   key?: string;
 }

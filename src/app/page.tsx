@@ -272,7 +272,7 @@ export default function Home() {
 
       <div
         className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
-          rawData.length > 0 ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+          rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
         }`}
       >
         {rawData.map((data, defIndex) => (
@@ -429,6 +429,28 @@ export default function Home() {
                                     </span>
                                   </p>
                                 )}
+                                {definition.synonyms.length > 0 && (
+                                  <p className="text-base text-blue-400">
+                                    {definition.synonyms.length > 1
+                                      ? "Synonyms"
+                                      : "Synonym"}
+                                    :{" "}
+                                    <span className="text-gray-400 italic">
+                                      {definition.synonyms.join(", ")}
+                                    </span>
+                                  </p>
+                                )}
+                                {definition.antonyms.length > 0 && (
+                                  <p className="text-base text-blue-400">
+                                    {definition.antonyms.length > 1
+                                      ? "Antonyms"
+                                      : "Antonym"}
+                                    :{" "}
+                                    <span className="text-gray-400 italic">
+                                      {definition.antonyms.join(", ")}
+                                    </span>
+                                  </p>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -474,29 +496,6 @@ export default function Home() {
                         </div>
                       ))
                     )}
-                  {meaning.synonyms.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-base text-blue-400">
-                        {meaning.synonyms.length > 1 ? "Synonyms" : "Synonym"}:
-                        {" "}
-                        <span className="text-gray-400 italic">
-                          {meaning.synonyms.join(", ")}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-
-                  {meaning.antonyms.length > 0 && (
-                    <div className="mb-4">
-                      <p className="text-base text-blue-400">
-                        {meaning.antonyms.length > 1 ? "Antonyms" : "Antonym"}:
-                        {" "}
-                        <span className="text-gray-400 italic">
-                          {meaning.antonyms.join(", ")}
-                        </span>
-                      </p>
-                    </div>
-                  )}
                 </div>
               ))}
 
