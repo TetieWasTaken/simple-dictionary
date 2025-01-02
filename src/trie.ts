@@ -165,7 +165,10 @@ export async function getAutoComplete(word: string) {
     return;
   }
 
-  if (!minTrie && !medTrie && !maxTrie) {
+  if (
+    minTrie.root.children.size === 0 && medTrie.root.children.size === 0 &&
+    maxTrie.root.children.size === 0
+  ) {
     log(LOG_LEVEL.DEBUG, "Trie not built", "getAutoComplete()");
     return;
   }

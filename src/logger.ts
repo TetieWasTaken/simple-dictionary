@@ -12,6 +12,8 @@ const getColour = async (level: LOG_LEVEL) => {
       return "\x1b[33m";
     case LOG_LEVEL.ERROR:
       return "\x1b[31m";
+    default:
+      return "\x1b[37m";
   }
 };
 

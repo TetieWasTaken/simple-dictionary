@@ -21,7 +21,7 @@ const parseWiktionaryData = (
   const meanings: DictionaryEntry[] = [];
 
   for (const key in data) {
-    if (data.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
       const entries = data[key];
       entries.forEach((entry) => {
         const definitions = entry.definitions

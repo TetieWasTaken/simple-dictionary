@@ -137,6 +137,11 @@ export default function Home() {
           `Failed to fetch data for ${word}`,
           "handleKeyDown()",
         );
+        if (error instanceof Error) {
+          log(LOG_LEVEL.ERROR, error.message, "handleKeyDown()");
+        } else {
+          log(LOG_LEVEL.ERROR, "Unknown error", "handleKeyDown()");
+        }
       }
     } else if (e.key === "Tab") {
       e.preventDefault();
@@ -250,6 +255,11 @@ export default function Home() {
                     `Failed to fetch data for ${word}`,
                     "handleKeyDown()",
                   );
+                  if (error instanceof Error) {
+                    log(LOG_LEVEL.ERROR, error.message, "handleKeyDown()");
+                  } else {
+                    log(LOG_LEVEL.ERROR, "Unknown error", "handleKeyDown()");
+                  }
                 }
               }}
             >

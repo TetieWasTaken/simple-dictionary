@@ -4,8 +4,6 @@ export enum ErrorType {
 }
 
 export class DictionaryError extends Error {
-  public message: string;
-
   constructor(public type: ErrorType) {
     super(type);
     this.name = "DictionaryError";
