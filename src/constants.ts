@@ -1,4 +1,4 @@
-export const LOOKUP_SYNONYMS = [
+export const LOOKUP_SYNONYMS: string[] = [
   "research",
   "find",
   "search for",
@@ -32,12 +32,12 @@ export const LOOKUP_SYNONYMS = [
   "scan",
 ];
 
-export const WIKITIONARY_RATE_LIMIT = 200;
+export const WIKTIONARY_RATE_LIMIT: number = 200;
 
 export enum LOG_LEVEL {
-  DEBUG,
-  INFO,
-  WARN,
-  ERROR,
+  DEBUG = 0,
+  INFO = 1,
+  WARN = 2,
+  ERROR = 3,
 }
-export const ACTIVE_LOG_LEVEL = LOG_LEVEL.DEBUG;
+export const ACTIVE_LOG_LEVEL: LOG_LEVEL = LOG_LEVEL.DEBUG;

@@ -4,17 +4,15 @@ import { DictionaryError, ErrorType, serialiseError } from "./error";
 import type {
   DictionaryEntry,
   DictionaryErrorJSON,
-  WikitionaryEntry,
+  WiktionaryEntry,
 } from "./types";
-import { LOG_LEVEL, WIKITIONARY_RATE_LIMIT } from "./constants";
+import { LOG_LEVEL, WIKTIONARY_RATE_LIMIT } from "./constants";
 import { log } from "./logger";
 
-const removeHTMLTags = (text: string) => {
-  return text.replace(/<[^>]*>/g, "");
-};
+const removeHTMLTags = (text: string) => text.replace(/<[^>]*>/g, "");
 
 const parseWiktionaryData = (
-  data: Record<string, WikitionaryEntry[]>,
+  data: Record<string, WiktionaryEntry[]>,
   word: string,
 ): DictionaryEntry[] => {
   log(
@@ -29,15 +27,13 @@ const parseWiktionaryData = (
       const entries = data[key];
       entries.forEach((entry) => {
         const definitions = entry.definitions
-          .map((def) => {
-            return {
-              definition: removeHTMLTags(def.definition),
-              example: def.examples?.[0] ? removeHTMLTags(def.examples[0]) : "",
-              examples: def.examples ? def.examples.map(removeHTMLTags) : [],
-              synonyms: [],
-              antonyms: [],
-            };
-          })
+          .map((def) => ({
+            definition: removeHTMLTags(def.definition),
+            example: def.examples?.[0] ? removeHTMLTags(def.examples[0]) : "",
+            examples: def.examples ? def.examples.map(removeHTMLTags) : [],
+            synonyms: [],
+            antonyms: [],
+          }))
           .filter((def) => def.definition.trim() !== "");
 
         if (definitions.length > 0) {
@@ -57,7 +53,7 @@ const parseWiktionaryData = (
               name: "CC-BY-SA 4.0",
               url: "https://en.wiktionary.org/wiki/Wiktionary:CC-BY-SA",
             },
-            source: "Wikitionary",
+            source: "Wiktionary",
             sourceUrls: [`https://en.wiktionary.org/wiki/${word}`],
             isManualSearch: true,
             key,
@@ -87,7 +83,7 @@ let requestCount = 0;
 let lastReset = Date.now();
 
 const rateLimit = async () => {
-  if (requestCount >= WIKITIONARY_RATE_LIMIT) {
+  if (requestCount >= WIKTIONARY_RATE_LIMIT) {
     const now = Date.now();
     const timePassed = now - lastReset;
 
@@ -107,22 +103,19 @@ const rateLimit = async () => {
   requestCount++;
 };
 
-const fetchFromWikitionary = async (
+const fetchFromWiktionary = async (
   word: string,
 ): Promise<DictionaryEntry[]> => {
   log(
     LOG_LEVEL.INFO,
     `Fetching data from Wiktionary for ${word}`,
-    "fetchFromWikitionary()",
+    "fetchFromWiktionary()",
   );
   await rateLimit();
 
-  // todo: test 200/s rate limit, set user agent to repo, redirect parameter
   const res = await fetch(
     `https://en.wiktionary.org/api/rest_v1/page/definition/${
-      encodeURIComponent(
-        word,
-      )
+      encodeURIComponent(word)
     }`,
     {
       headers: {
@@ -136,15 +129,14 @@ const fetchFromWikitionary = async (
       log(
         LOG_LEVEL.DEBUG,
         `Word not found in Wiktionary for ${word}`,
-        "fetchFromWikitionary()",
+        "fetchFromWiktionary()",
       );
-
       throw new DictionaryError(ErrorType.NotFound);
     } else {
       log(
         LOG_LEVEL.WARN,
         `Status ${res.status} for Wiktionary request for ${word}`,
-        "fetchFromWikitionary()",
+        "fetchFromWiktionary()",
       );
       throw new DictionaryError(ErrorType.Failed);
     }
@@ -156,9 +148,8 @@ const fetchFromWikitionary = async (
     log(
       LOG_LEVEL.WARN,
       `No data found in Wiktionary for ${word}`,
-      "fetchFromWikitionary()",
+      "fetchFromWiktionary()",
     );
-
     throw new DictionaryError(ErrorType.Failed);
   }
 
@@ -189,7 +180,7 @@ export const getData = async (
       );
 
       try {
-        return (await fetchFromWikitionary(word));
+        return await fetchFromWiktionary(word);
       } catch (error) {
         if (error instanceof DictionaryError) {
           if (error.type !== ErrorType.NotFound) {
@@ -207,7 +198,6 @@ export const getData = async (
             `Unknown error fetching data from Wiktionary for ${word}`,
             "getData()",
           );
-
           return serialiseError(new DictionaryError(ErrorType.Failed));
         }
       }

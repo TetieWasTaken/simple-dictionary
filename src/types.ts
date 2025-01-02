@@ -44,16 +44,16 @@ export interface AutocompleteResult {
   performance: number;
 }
 
-interface WikitionaryDefinition {
+interface WikiionaryDefinition {
   definition: string;
   parsedExamples?: Record<string, string>[];
   examples?: string[];
 }
 
-export interface WikitionaryEntry {
+export interface WiktionaryEntry {
   partOfSpeech: string;
   language: string;
-  definitions: WikitionaryDefinition[];
+  definitions: WikiionaryDefinition[];
 }
 
 export interface DictionaryErrorJSON {

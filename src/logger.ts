@@ -17,9 +17,15 @@ const getColour = async (level: LOG_LEVEL) => {
   }
 };
 
+const colourCache: { [key in LOG_LEVEL]?: string } = {};
+
 export async function log(level: LOG_LEVEL, message: string, source: string) {
   if (level >= ACTIVE_LOG_LEVEL) {
-    const colour = await getColour(level);
+    let colour = colourCache[level];
+    if (!colour) {
+      colour = await getColour(level);
+      colourCache[level] = colour;
+    }
     const timestamp = new Date().toISOString();
     console.log(`${colour}[${timestamp}] [${source}] ${message}\x1b[0m`);
   }

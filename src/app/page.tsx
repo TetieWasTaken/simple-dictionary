@@ -1,7 +1,7 @@
 "use client";
 
 // react & next
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 // types
@@ -38,19 +38,21 @@ export default function Home() {
 
   const router = useRouter();
 
-  const toggleOpen = (id: string) => {
+  const toggleOpen = useCallback((id: string) => {
     log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
 
-    if (openedIndex.includes(id)) {
-      setOpenedIndex(openedIndex.filter((index) => index !== id));
-    } else {
-      setOpenedIndex([...openedIndex, id]);
-    }
-  };
+    setOpenedIndex((prevOpenedIndex) =>
+      prevOpenedIndex.includes(id)
+        ? prevOpenedIndex.filter((index) => index !== id)
+        : [...prevOpenedIndex, id]
+    );
+  }, []);
 
-  const isOpen = (id: string) => openedIndex.includes(id);
+  const isOpen = useCallback((id: string) => openedIndex.includes(id), [
+    openedIndex,
+  ]);
 
-  const toggleLanguage = (language: string | undefined) => {
+  const toggleLanguage = useCallback((language: string | undefined) => {
     if (!language) return;
 
     log(
@@ -59,15 +61,17 @@ export default function Home() {
       "toggleLanguage()",
     );
 
-    if (openedLanguages.includes(language)) {
-      setOpenedLanguages(openedLanguages.filter((lang) => lang !== language));
-    } else {
-      setOpenedLanguages([...openedLanguages, language]);
-    }
-  };
+    setOpenedLanguages((prevOpenedLanguages) =>
+      prevOpenedLanguages.includes(language)
+        ? prevOpenedLanguages.filter((lang) => lang !== language)
+        : [...prevOpenedLanguages, language]
+    );
+  }, []);
 
-  const isLanguageOpen = (language: string) =>
-    openedLanguages.includes(language);
+  const isLanguageOpen = useCallback(
+    (language: string) => openedLanguages.includes(language),
+    [openedLanguages],
+  );
 
   useEffect(() => {
     const randomSynonym =
@@ -80,10 +84,13 @@ export default function Home() {
     setLookupWord(randomSynonym);
   }, []);
 
-  const sanitiseInput = (input: string) =>
-    input.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
+  const sanitiseInput = useCallback(
+    (input: string) =>
+      input.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").trim(),
+    [],
+  );
 
-  const fetchData = async (word: string) => {
+  const fetchData = useCallback(async (word: string) => {
     setIsFetching(true);
     setError(undefined);
 
@@ -119,6 +126,7 @@ export default function Home() {
 
         setRawData([]);
         setError(new DictionaryError(res.type as ErrorType));
+        setIsFetching(false);
         return;
       }
 
@@ -143,41 +151,44 @@ export default function Home() {
     }
 
     setIsFetching(false);
-  };
+  }, [rawData, router, sanitiseInput]);
 
-  const handleKeyDown = async (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      try {
-        await fetchData(word);
-      } catch (error) {
-        log(
-          LOG_LEVEL.ERROR,
-          `Failed to fetch data for ${word}`,
-          "handleKeyDown()",
-        );
-        if (error instanceof Error) {
-          log(LOG_LEVEL.ERROR, error.message, "handleKeyDown()");
-        } else {
-          log(LOG_LEVEL.ERROR, "Unknown error", "handleKeyDown()");
+  const handleKeyDown = useCallback(
+    async (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        try {
+          await fetchData(word);
+        } catch (error) {
+          log(
+            LOG_LEVEL.ERROR,
+            `Failed to fetch data for ${word}`,
+            "handleKeyDown()",
+          );
+          if (error instanceof Error) {
+            log(LOG_LEVEL.ERROR, error.message, "handleKeyDown()");
+          } else {
+            log(LOG_LEVEL.ERROR, "Unknown error", "handleKeyDown()");
+          }
         }
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        if (!autoCompleteWords) return;
+
+        log(LOG_LEVEL.DEBUG, "Tab pressed", "handleKeyDown()");
+
+        setWord(autoCompleteWords.words[0]);
+        setAutoCompleteWords(null);
       }
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-      if (!autoCompleteWords) return;
-
-      log(LOG_LEVEL.DEBUG, "Tab pressed", "handleKeyDown()");
-
-      setWord(autoCompleteWords.words[0]);
-      setAutoCompleteWords(null);
-    }
-  };
+    },
+    [autoCompleteWords, fetchData, word],
+  );
 
   useEffect(() => {
     buildTrie();
   }, []);
 
-  const autoComplete = async (word: string) => {
+  const autoComplete = useCallback(async (word: string) => {
     if (isFetching) return;
 
     word = sanitiseInput(word);
@@ -209,14 +220,14 @@ export default function Home() {
     );
 
     setAutoCompleteWords(autoCompleteWordResult);
-  };
+  }, [isFetching, sanitiseInput]);
 
-  const decodeHTML = (input: string) => {
+  const decodeHTML = useCallback((input: string) => {
     const doc = new DOMParser().parseFromString(input, "text/html");
     const text = doc.documentElement.textContent;
     if (!text) return input;
     return text.replace(/:$/, "");
-  };
+  }, []);
 
   // todo: animations, effects, loading states, optimisations, merge etymologies, tests, expandable cards
   return (

@@ -28,91 +28,44 @@ class Trie {
       if (!node.children.has(char)) {
         node.children.set(char, new TrieNode());
       }
-
-      const nextNode = node.children.get(char);
-
-      if (!nextNode) {
-        throw new Error("Node not found");
-      }
-
-      node = nextNode;
+      node = node.children.get(char)!;
     }
-
     node.isEnd = true;
   }
 
-  private _getWords(node: TrieNode, prefix: string) {
+  private _getWords(node: TrieNode, prefix: string): string[] {
     const words: string[] = [];
     if (node.isEnd) {
       words.push(prefix);
     }
-
     for (const [char, nextNode] of node.children) {
-      if (!nextNode) {
-        continue;
-      }
-
       words.push(...this._getWords(nextNode, prefix + char));
     }
-
     return words;
   }
 
-  /*
-  private _getWords(node: TrieNode, prefix: string, maxResults: number = 10): string[] {
-    const words: string[] = [];
-    const stack: [TrieNode, string][] = [[node, prefix]];
-
-    while (stack.length > 0) {
-      const [currentNode, currentPrefix] = stack.pop()!;
-      if (currentNode.isEnd) {
-        words.push(currentPrefix);
-        if (words.length >= maxResults) {
-          break;
-        }
-      }
-      for (const [char, nextNode] of currentNode.children) {
-        if (nextNode) {
-          stack.push([nextNode, currentPrefix + char]);
-        }
-      }
-    }
-
-    return words;
-  }
-  */
-
-  getWordsByPrefix(prefix: string) {
+  getWordsByPrefix(prefix: string): string[] {
     log(
       LOG_LEVEL.DEBUG,
       `Getting words with prefix ${prefix}`,
       "Trie.getWordsByPrefix()",
     );
-
     let node = this.root;
     for (const char of prefix) {
       if (!node.children.has(char)) {
         return [];
       }
-
-      const nextNode = node.children.get(char);
-
-      if (!nextNode) {
-        return [];
-      }
-
-      node = nextNode;
+      node = node.children.get(char)!;
     }
-
     return this._getWords(node, prefix);
   }
 }
 
 export default Trie;
 
-const minTrie: Trie = new Trie();
-const medTrie: Trie = new Trie();
-const maxTrie: Trie = new Trie();
+const minTrie = new Trie();
+const medTrie = new Trie();
+const maxTrie = new Trie();
 
 export async function buildTrie() {
   if (
@@ -124,7 +77,6 @@ export async function buildTrie() {
   }
 
   log(LOG_LEVEL.INFO, "Building trie", "buildTrie()");
-
   const startPerformance = performance.now();
 
   const files = [
@@ -142,12 +94,10 @@ export async function buildTrie() {
     );
 
     log(LOG_LEVEL.DEBUG, "Inserting words into trie", "buildTrie()");
-    fileContents.forEach((content, index) => {
+    await Promise.all(fileContents.map((content, index) => {
       const lines = content.split("\n");
-      lines.forEach((line) => {
-        files[index].trie.insert(line);
-      });
-    });
+      lines.forEach((line) => files[index].trie.insert(line));
+    }));
   } catch (err) {
     log(LOG_LEVEL.ERROR, `Error building trie: ${err}`, "buildTrie()");
   }
@@ -174,8 +124,8 @@ export async function getAutoComplete(word: string) {
   }
 
   log(LOG_LEVEL.DEBUG, `Getting autocomplete for ${word}`, "getAutoComplete()");
-
   const perfStart = performance.now();
+
   const tries = [minTrie, medTrie, maxTrie];
   let words: string[] = [];
 
@@ -189,7 +139,7 @@ export async function getAutoComplete(word: string) {
       const closeWords = allWords.filter((w) => distance(w, word) <= 1);
       words = [...new Set([...words, ...closeWords])];
 
-      if (words.length == 0) {
+      if (words.length === 0) {
         const closeWords = allWords.filter((w) => distance(w, word) <= 2);
         words = [...new Set([...words, ...closeWords])];
       }
@@ -203,15 +153,12 @@ export async function getAutoComplete(word: string) {
   }
 
   log(LOG_LEVEL.DEBUG, `Found ${words.length} words`, "getAutoComplete()");
-
-  const closestWords = words
-    .map((w) => ({ word: w, dist: distance(w, word) }))
+  const closestWords = words.map((w) => ({ word: w, dist: distance(w, word) }))
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 5)
     .map((w) => w.word);
 
   const perfEnd = performance.now();
-
   log(
     LOG_LEVEL.DEBUG,
     `Autocomplete found in ${perfEnd - perfStart}ms`,
