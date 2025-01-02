@@ -47,17 +47,28 @@ class Trie {
   getWordsByPrefix(prefix: string): string[] {
     log(
       LOG_LEVEL.DEBUG,
-      `Getting words with prefix ${prefix}`,
+      `Getting words with prefix: ${prefix}`,
       "Trie.getWordsByPrefix()",
     );
     let node = this.root;
     for (const char of prefix) {
       if (!node.children.has(char)) {
+        log(
+          LOG_LEVEL.DEBUG,
+          `Prefix not found: ${prefix}`,
+          "Trie.getWordsByPrefix()",
+        );
         return [];
       }
       node = node.children.get(char)!;
     }
-    return this._getWords(node, prefix);
+    const words = this._getWords(node, prefix);
+    log(
+      LOG_LEVEL.DEBUG,
+      `Found ${words.length} words with prefix: ${prefix}`,
+      "Trie.getWordsByPrefix()",
+    );
+    return words;
   }
 }
 
@@ -67,7 +78,6 @@ const minTrie = new Trie();
 const medTrie = new Trie();
 const maxTrie = new Trie();
 
-// todo: have a pre-built trie
 export async function buildTrie() {
   if (
     minTrie.root.children.size > 0 && medTrie.root.children.size > 0 &&
@@ -111,9 +121,13 @@ export async function buildTrie() {
   );
 }
 
-// todo: filter out words that don't exist in the dictionary
 export async function getAutoComplete(word: string) {
   if (!word) {
+    log(
+      LOG_LEVEL.DEBUG,
+      "No word provided for autocomplete",
+      "getAutoComplete()",
+    );
     return;
   }
 
@@ -125,7 +139,11 @@ export async function getAutoComplete(word: string) {
     return;
   }
 
-  log(LOG_LEVEL.DEBUG, `Getting autocomplete for ${word}`, "getAutoComplete()");
+  log(
+    LOG_LEVEL.INFO,
+    `Getting autocomplete for: ${word}`,
+    "getAutoComplete()",
+  );
   const perfStart = performance.now();
 
   const tries = [minTrie, medTrie, maxTrie];
@@ -151,10 +169,19 @@ export async function getAutoComplete(word: string) {
   }
 
   if (words.length === 0) {
+    log(
+      LOG_LEVEL.DEBUG,
+      "No autocomplete suggestions found",
+      "getAutoComplete()",
+    );
     return;
   }
 
-  log(LOG_LEVEL.DEBUG, `Found ${words.length} words`, "getAutoComplete()");
+  log(
+    LOG_LEVEL.DEBUG,
+    `Found ${words.length} words for autocomplete`,
+    "getAutoComplete()",
+  );
   const closestWords = words.map((w) => ({ word: w, dist: distance(w, word) }))
     .sort((a, b) => a.dist - b.dist)
     .slice(0, 5)

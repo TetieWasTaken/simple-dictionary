@@ -19,6 +19,10 @@ import { log } from "@/logger";
 // external libraries
 import { RiArrowDropDownLine } from "react-icons/ri";
 
+// components
+import Theme from "@/components/theme";
+import Github from "@/components/github";
+
 export default function Home() {
   const searchParams = useSearchParams();
   const [word, setWord] = useState(
@@ -232,18 +236,23 @@ export default function Home() {
 
   // todo: animations, effects, loading states, optimisations, merge etymologies, tests
   return (
-    <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="absolute top-4 right-4 flex space-x-4">
+        <Theme />
+        <Github />
+      </div>
+
       <div
-        className={`flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl transition-all duration-300 ease-in-out ${
+        className={`flex flex-col items-center p-10 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 w-full max-w-3xl transition-all duration-300 ease-in-out ${
           expandedCard !== null ? "blur-sm" : ""
         }`}
       >
-        <h2 className="text-3xl font-semibold mb-6 text-white">
+        <h2 className="text-3xl font-semibold mb-6 dark:text-white text-gray-900">
           Simple Dictionary
         </h2>
 
         <form className="w-full">
-          <label className="mb-2 text-sm font-medium sr-only text-white">
+          <label className="mb-2 text-sm font-medium sr-only dark:text-white text-gray-900">
             Search
           </label>
           <div className="relative">
@@ -267,7 +276,7 @@ export default function Home() {
             <input
               type="search"
               id="search"
-              className="block w-full p-6 ps-12 text-lg border rounded-lg bg-gray-700 border-gray-600 placeholder-gray-400 text-white focus:ring-blue-500 focus:border-blue-500 transition-transform duration-300"
+              className="block w-full p-6 ps-12 text-lg border rounded-lg dark:bg-gray-700 bg-gray-300 dark:border-gray-600 border-gray-400 dark:placeholder-gray-400 placeholder-gray-600 dark:text-white text-gray-900 focus:ring-blue-500 focus:border-blue-500 transition-transform duration-300"
               placeholder="Search"
               required
               value={word}
@@ -281,7 +290,7 @@ export default function Home() {
             />
             <button
               type="submit"
-              className="absolute end-2.5 bottom-2.5 text-white font-medium rounded-lg text-lg px-6 py-3 bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-800"
+              className="absolute end-2.5 bottom-2.5 dark:text-white text-gray-900 font-medium rounded-lg text-lg px-6 py-3 dark:bg-blue-600 bg-blue-400 dark:hover:bg-blue-700 hover:bg-blue-500 focus:ring-4 dark:focus:ring-blue-800 focus:ring-blue-600"
               onClick={async (e) => {
                 e.preventDefault();
                 try {
@@ -306,11 +315,11 @@ export default function Home() {
         </form>
 
         {autoCompleteWords && autoCompleteWords.words.length > 0 && (
-          <div className="mt-2 text-sm text-gray-400">
+          <div className="mt-2 text-sm dark:text-gray-400 text-gray-600">
             Did you mean: {autoCompleteWords.words.map((word, index) => (
               <span
                 key={index}
-                className="cursor-pointer text-blue-400 hover:underline"
+                className="cursor-pointer dark:text-blue-400 text-blue-600 hover:underline"
                 onClick={() => {
                   setWord(word);
                   setAutoCompleteWords(null);
@@ -324,44 +333,50 @@ export default function Home() {
         )}
 
         {error && (
-          <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg bg-red-700">
-            <h2 className="text-3xl font-bold mb-2 text-white">{error.type}</h2>
-            <p className="text-lg text-white">{error.message}</p>
+          <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg dark:bg-red-700 bg-red-500">
+            <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
+              {error.type}
+            </h2>
+            <p className="text-lg dark:text-white text-gray-900">
+              {error.message}
+            </p>
           </div>
         )}
       </div>
 
       {isFetching && (
-        <div className="mt-8 text-white text-lg">Fetching data...</div>
+        <div className="mt-8 dark:text-white text-gray-900 text-lg">
+          Fetching data...
+        </div>
       )}
 
       {expandedCard !== null && (
         <>
           <style jsx global>
             {`
-              body { overflow: hidden; }
-            `}
+          body { overflow: hidden; }
+        `}
           </style>
           <div
             className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
             onClick={() => setExpandedCard(null)}
           >
             <div
-              className="w-full max-w-5xl p-8 rounded-lg shadow-lg bg-gray-700"
+              className="w-full max-w-5xl p-8 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300"
               onClick={(e) => e.stopPropagation()}
             >
               <button
-                className="absolute top-2 end-2 text-white cursor-pointer focus:outline-none"
+                className="absolute top-2 end-2 dark:text-white text-gray-900 cursor-pointer focus:outline-none"
                 onClick={() => setExpandedCard(null)}
               >
                 Close
               </button>
-              <h2 className="text-3xl font-bold mb-2 text-white">
+              <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
                 {rawData[expandedCard].word}
               </h2>
               {rawData[expandedCard].phonetic || rawData[expandedCard].phonetics
                 ? (
-                  <p className="text-lg italic text-gray-400 mb-4">
+                  <p className="text-lg italic dark:text-gray-400 text-gray-600 mb-4">
                     {rawData[expandedCard].phonetic && (
                       <span className="mr-2">
                         {rawData[expandedCard].phonetic}
@@ -387,26 +402,26 @@ export default function Home() {
                 : null}
 
               {rawData[expandedCard].origin && (
-                <p className="text-lg text-gray-400 mb-4">
+                <p className="text-lg dark:text-gray-400 text-gray-600 mb-4">
                   Origin: {rawData[expandedCard].origin}
                 </p>
               )}
 
               {rawData[expandedCard].meanings.map((meaning, index) => (
                 <div key={index} className="mb-6">
-                  <h3 className="text-xl font-semibold text-blue-400">
+                  <h3 className="text-xl font-semibold dark:text-blue-400 text-blue-600">
                     {meaning.partOfSpeech}
                   </h3>
                   {meaning.language && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm dark:text-gray-400 text-gray-600">
                       {meaning.language}
                     </p>
                   )}
-                  <p className="text-lg text-white">
+                  <p className="text-lg dark:text-white text-gray-900">
                     {decodeHTML(meaning.definitions[0].definition)}
                   </p>
                   {meaning.definitions[0].example && (
-                    <p className="text-gray-400 mt-1">
+                    <p className="dark:text-gray-400 text-gray-600 mt-1">
                       Example:{" "}
                       <span className="italic">
                         {decodeHTML(meaning.definitions[0].example)}
@@ -414,23 +429,23 @@ export default function Home() {
                     </p>
                   )}
                   {meaning.definitions[0].synonyms.length > 0 && (
-                    <p className="text-base text-blue-400">
+                    <p className="text-base dark:text-blue-400 text-blue-600">
                       {meaning.definitions[0].synonyms.length > 1
                         ? "Synonyms"
                         : "Synonym"}
                       :{" "}
-                      <span className="text-gray-400 italic">
+                      <span className="dark:text-gray-400 text-gray-600 italic">
                         {meaning.definitions[0].synonyms.join(", ")}
                       </span>
                     </p>
                   )}
                   {meaning.definitions[0].antonyms.length > 0 && (
-                    <p className="text-base text-blue-400">
+                    <p className="text-base dark:text-blue-400 text-blue-600">
                       {meaning.definitions[0].antonyms.length > 1
                         ? "Antonyms"
                         : "Antonym"}
                       :{" "}
-                      <span className="text-gray-400 italic">
+                      <span className="dark:text-gray-400 text-gray-600 italic">
                         {meaning.definitions[0].antonyms.join(", ")}
                       </span>
                     </p>
@@ -458,7 +473,7 @@ export default function Home() {
                 <hr className="my-8 border-gray-600" />
                 <button
                   onClick={() => toggleLanguage(data.key)}
-                  className="text-lg text-white cursor-pointer mt-2 focus:outline-none max-w-3xl p-2 rounded-lg shadow-lg bg-gray-700"
+                  className="text-lg dark:text-white text-gray-900 cursor-pointer mt-2 focus:outline-none max-w-3xl p-2 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300"
                 >
                   <span className="inline-flex items-center">
                     <RiArrowDropDownLine />
@@ -470,19 +485,19 @@ export default function Home() {
             )}
 
             <div
-              className={`w-full max-w-3xl rounded-lg shadow-lg bg-gray-700 transition-all duration-300 ease-in-out overflow-hidden ${
+              className={`w-full max-w-3xl rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 transition-all duration-300 ease-in-out overflow-hidden ${
                 isLanguageOpen(data.key || "en")
                   ? "max-h-max opacity-100 p-8 mt-8"
                   : "max-h-0 opacity-0 p-0 mt-0"
               }`}
               onClick={() => setExpandedCard(defIndex)}
             >
-              <h2 className="text-3xl font-bold mb-2 text-white">
+              <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
                 {data.word}
               </h2>
               {data.phonetic || data.phonetics
                 ? (
-                  <p className="text-lg italic text-gray-400 mb-4">
+                  <p className="text-lg italic dark:text-gray-400 text-gray-600 mb-4">
                     {data.phonetic && (
                       <span className="mr-2">{data.phonetic}</span>
                     )}
@@ -505,29 +520,29 @@ export default function Home() {
                 : null}
 
               {data.origin && (
-                <p className="text-lg text-gray-400 mb-4">
+                <p className="text-lg dark:text-gray-400 text-gray-600 mb-4">
                   Origin: {data.origin}
                 </p>
               )}
 
               {data.meanings.map((meaning, index) => (
                 <div key={index} className="mb-6">
-                  <h3 className="text-xl font-semibold text-blue-400">
+                  <h3 className="text-xl font-semibold dark:text-blue-400 text-blue-600">
                     {meaning.partOfSpeech}
                   </h3>
                   {meaning.language && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm dark:text-gray-400 text-gray-600">
                       {meaning.language}
                     </p>
                   )}
                   {meaning.definitions.length > 1
                     ? (
                       <>
-                        <p className="text-lg text-white">
+                        <p className="text-lg dark:text-white text-gray-900">
                           {decodeHTML(meaning.definitions[0].definition)}
                         </p>
                         {meaning.definitions[0].example && (
-                          <p className="text-gray-400 mt-1">
+                          <p className="dark:text-gray-400 text-gray-600 mt-1">
                             Example:{" "}
                             <span className="italic">
                               {decodeHTML(meaning.definitions[0].example)}
@@ -535,23 +550,23 @@ export default function Home() {
                           </p>
                         )}
                         {meaning.definitions[0].synonyms.length > 0 && (
-                          <p className="text-base text-blue-400">
+                          <p className="text-base dark:text-blue-400 text-blue-600">
                             {meaning.definitions[0].synonyms.length > 1
                               ? "Synonyms"
                               : "Synonym"}
                             :{" "}
-                            <span className="text-gray-400 italic">
+                            <span className="dark:text-gray-400 text-gray-600 italic">
                               {meaning.definitions[0].synonyms.join(", ")}
                             </span>
                           </p>
                         )}
                         {meaning.definitions[0].antonyms.length > 0 && (
-                          <p className="text-base text-blue-400">
+                          <p className="text-base dark:text-blue-400 text-blue-600">
                             {meaning.definitions[0].antonyms.length > 1
                               ? "Antonyms"
                               : "Antonym"}
                             :{" "}
-                            <span className="text-gray-400 italic">
+                            <span className="dark:text-gray-400 text-gray-600 italic">
                               {meaning.definitions[0].antonyms.join(", ")}
                             </span>
                           </p>
@@ -562,7 +577,7 @@ export default function Home() {
                               e.stopPropagation();
                               toggleOpen(`${index}-${defIndex}`);
                             }}
-                            className="text-lg text-blue-300 cursor-pointer mt-2 focus:outline-none hover:border-b-2 hover:border-blue-400"
+                            className="text-lg dark:text-blue-300 text-blue-600 cursor-pointer mt-2 focus:outline-none hover:border-b-2 hover:border-blue-400"
                           >
                             <span className="inline-flex items-center">
                               {meaning.definitions.length - 1} More
@@ -585,12 +600,12 @@ export default function Home() {
                               defIndex,
                             ) => (
                               <div key={defIndex} className="mt-2">
-                                <hr className="my-2 border-gray-600" />
-                                <p className="text-lg text-white">
+                                <hr className="my-2 dark:border-gray-600 border-gray-400" />
+                                <p className="text-lg dark:text-white text-gray-900">
                                   {decodeHTML(definition.definition)}
                                 </p>
                                 {definition.example && (
-                                  <p className="text-gray-400 mt-1">
+                                  <p className="dark:text-gray-400 text-gray-600 mt-1">
                                     Example:{" "}
                                     <span className="italic">
                                       {decodeHTML(definition.example)}
@@ -598,23 +613,23 @@ export default function Home() {
                                   </p>
                                 )}
                                 {definition.synonyms.length > 0 && (
-                                  <p className="text-base text-blue-400">
+                                  <p className="text-base dark:text-blue-400 text-blue-600">
                                     {definition.synonyms.length > 1
                                       ? "Synonyms"
                                       : "Synonym"}
                                     :{" "}
-                                    <span className="text-gray-400 italic">
+                                    <span className="dark:text-gray-400 text-gray-600 italic">
                                       {definition.synonyms.join(", ")}
                                     </span>
                                   </p>
                                 )}
                                 {definition.antonyms.length > 0 && (
-                                  <p className="text-base text-blue-400">
+                                  <p className="text-base dark:text-blue-400 text-blue-600">
                                     {definition.antonyms.length > 1
                                       ? "Antonyms"
                                       : "Antonym"}
                                     :{" "}
-                                    <span className="text-gray-400 italic">
+                                    <span className="dark:text-gray-400 text-gray-600 italic">
                                       {definition.antonyms.join(", ")}
                                     </span>
                                   </p>
@@ -628,11 +643,11 @@ export default function Home() {
                     : (
                       meaning.definitions.map((definition, defIndex) => (
                         <div key={defIndex} className="mb-4">
-                          <p className="text-lg text-white">
+                          <p className="text-lg dark:text-white text-gray-900">
                             {decodeHTML(definition.definition)}
                           </p>
                           {definition.example && (
-                            <p className="text-gray-400 mt-1">
+                            <p className="dark:text-gray-400 text-gray-600 mt-1">
                               Example:{" "}
                               <span className="italic">
                                 {decodeHTML(definition.example)}
@@ -640,23 +655,23 @@ export default function Home() {
                             </p>
                           )}
                           {definition.synonyms.length > 0 && (
-                            <p className="text-base text-blue-400">
+                            <p className="text-base dark:text-blue-400 text-blue-600">
                               {definition.synonyms.length > 1
                                 ? "Synonyms"
                                 : "Synonym"}
                               :{" "}
-                              <span className="text-gray-400 italic">
+                              <span className="dark:text-gray-400 text-gray-600 italic">
                                 {definition.synonyms.join(", ")}
                               </span>
                             </p>
                           )}
                           {definition.antonyms.length > 0 && (
-                            <p className="text-base text-blue-400">
+                            <p className="text-base dark:text-blue-400 text-blue-600">
                               {definition.antonyms.length > 1
                                 ? "Antonyms"
                                 : "Antonym"}
                               :{" "}
-                              <span className="text-gray-400 italic">
+                              <span className="dark:text-gray-400 text-gray-600 italic">
                                 {definition.antonyms.join(", ")}
                               </span>
                             </p>
@@ -667,10 +682,10 @@ export default function Home() {
                 </div>
               ))}
 
-              <hr className="my-4 border-gray-600" />
+              <hr className="my-4 dark:border-gray-600 border-gray-400" />
 
               {source && (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm dark:text-gray-400 text-gray-600">
                   Definition source:{" "}
                   <a
                     href={source}
@@ -683,7 +698,9 @@ export default function Home() {
                   {!data.isManualSearch && (
                     <>
                       {" "}
-                      <span className="text-gray-400">|</span>{" "}
+                      <span className="dark:text-gray-400 text-gray-600">
+                        |
+                      </span>{" "}
                       <a
                         href="https://dictionaryapi.dev/"
                         target="_blank"
@@ -698,7 +715,7 @@ export default function Home() {
               )}
 
               {license && (
-                <p className="text-sm text-gray-400">
+                <p className="text-sm dark:text-gray-400 text-gray-600">
                   Definition license:{" "}
                   <a
                     href={license.url}
@@ -711,12 +728,12 @@ export default function Home() {
                 </p>
               )}
 
-              <hr className="my-4 border-gray-600" />
+              <hr className="my-4 dark:border-gray-600 border-gray-400" />
 
               {data.phonetics && data.phonetics[0] && (
                 <div>
                   {data.phonetics[0].sourceUrl && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm dark:text-gray-400 text-gray-600">
                       Phonetics Source:{" "}
                       <a
                         href={data.phonetics[0].sourceUrl}
@@ -726,7 +743,9 @@ export default function Home() {
                       >
                         {data.phonetics[0].sourceUrl}
                       </a>{" "}
-                      <span className="text-gray-400">|</span>{" "}
+                      <span className="dark:text-gray-400 text-gray-600">
+                        |
+                      </span>{" "}
                       <a
                         href="https://dictionaryapi.dev/"
                         target="_blank"
@@ -739,7 +758,7 @@ export default function Home() {
                   )}
 
                   {data.phonetics[0].license && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-sm dark:text-gray-400 text-gray-600">
                       Phonetics License:{" "}
                       <a
                         href={data.phonetics[0].license.url}

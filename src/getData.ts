@@ -17,7 +17,7 @@ const parseWiktionaryData = (
 ): DictionaryEntry[] => {
   log(
     LOG_LEVEL.DEBUG,
-    `Parsing Wiktionary data for ${word}`,
+    `Parsing Wiktionary data for word: ${word}`,
     "parseWiktionaryData()",
   );
   const meanings: DictionaryEntry[] = [];
@@ -76,6 +76,12 @@ const parseWiktionaryData = (
     return 0;
   });
 
+  log(
+    LOG_LEVEL.DEBUG,
+    `Parsed ${meanings.length} meanings for word: ${word}`,
+    "parseWiktionaryData()",
+  );
+
   return meanings;
 };
 
@@ -108,7 +114,7 @@ const fetchFromWiktionary = async (
 ): Promise<DictionaryEntry[]> => {
   log(
     LOG_LEVEL.INFO,
-    `Fetching data from Wiktionary for ${word}`,
+    `Fetching data from Wiktionary for word: ${word}`,
     "fetchFromWiktionary()",
   );
   await rateLimit();
@@ -128,14 +134,14 @@ const fetchFromWiktionary = async (
     if (res.status === 404) {
       log(
         LOG_LEVEL.DEBUG,
-        `Word not found in Wiktionary for ${word}`,
+        `Word not found in Wiktionary for word: ${word}`,
         "fetchFromWiktionary()",
       );
       throw new DictionaryError(ErrorType.NotFound);
     } else {
       log(
         LOG_LEVEL.WARN,
-        `Status ${res.status} for Wiktionary request for ${word}`,
+        `Status ${res.status} for Wiktionary request for word: ${word}`,
         "fetchFromWiktionary()",
       );
       throw new DictionaryError(ErrorType.Failed);
@@ -147,11 +153,17 @@ const fetchFromWiktionary = async (
   if (!data) {
     log(
       LOG_LEVEL.WARN,
-      `No data found in Wiktionary for ${word}`,
+      `No data found in Wiktionary for word: ${word}`,
       "fetchFromWiktionary()",
     );
     throw new DictionaryError(ErrorType.Failed);
   }
+
+  log(
+    LOG_LEVEL.INFO,
+    `Data fetched successfully from Wiktionary for word: ${word}`,
+    "fetchFromWiktionary()",
+  );
 
   return parseWiktionaryData(data, word);
 };
@@ -161,7 +173,7 @@ export const getData = async (
 ): Promise<DictionaryEntry[] | DictionaryErrorJSON> => {
   log(
     LOG_LEVEL.INFO,
-    `Fetching data from dictionary API for ${word}`,
+    `Fetching data from dictionary API for word: ${word}`,
     "getData()",
   );
 
@@ -175,7 +187,7 @@ export const getData = async (
     if (res.statusText === "Not Found") {
       log(
         LOG_LEVEL.DEBUG,
-        `Word not found in dictionary API for ${word}`,
+        `Word not found in dictionary API for word: ${word}`,
         "getData()",
       );
 
@@ -186,26 +198,35 @@ export const getData = async (
           if (error.type !== ErrorType.NotFound) {
             log(
               LOG_LEVEL.ERROR,
-              `Error fetching data from Wiktionary for ${word}: ${error.type}`,
+              `Error fetching data from Wiktionary for word: ${word}: ${error.type}`,
               "getData()",
             );
           }
-
           return serialiseError(error);
         } else {
           log(
             LOG_LEVEL.ERROR,
-            `Unknown error fetching data from Wiktionary for ${word}`,
+            `Unknown error fetching data from Wiktionary for word: ${word}`,
             "getData()",
           );
           return serialiseError(new DictionaryError(ErrorType.Failed));
         }
       }
     } else {
+      log(
+        LOG_LEVEL.ERROR,
+        `Failed to fetch data from dictionary API for word: ${word}. Status: ${res.status}`,
+        "getData()",
+      );
       return serialiseError(new DictionaryError(ErrorType.Failed));
     }
   }
 
   const data = await res.json();
+  log(
+    LOG_LEVEL.INFO,
+    `Data fetched successfully from dictionary API for word: ${word}`,
+    "getData()",
+  );
   return data;
 };
