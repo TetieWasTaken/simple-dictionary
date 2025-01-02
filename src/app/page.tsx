@@ -558,16 +558,19 @@ export default function Home() {
                         )}
                         <div className="mb-4">
                           <button
-                            onClick={() => toggleOpen(`${index}-${defIndex}`)}
-                            className="text-lg text-white cursor-pointer mt-2 focus:outline-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleOpen(`${index}-${defIndex}`);
+                            }}
+                            className="text-lg text-blue-300 cursor-pointer mt-2 focus:outline-none hover:border-b-2 hover:border-blue-400"
                           >
                             <span className="inline-flex items-center">
-                              <RiArrowDropDownLine />
                               {meaning.definitions.length - 1} More
                               {meaning.definitions.length > 2
                                 ? " definitions "
                                 : " definition "}
                               available
+                              <RiArrowDropDownLine />
                             </span>
                           </button>
                           <div
