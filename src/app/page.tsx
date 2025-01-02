@@ -248,28 +248,6 @@ export default function Home() {
   // todo: animations, effects, loading states, optimisations, merge etymologies, tests, fix cards not transitioning
   return (
     <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
-      <div className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gray-300 dark:bg-gray-700 shadow-lg transition-all duration-300 ease-in-out">
-        <div className="flex items-center space-x-4">
-          <h2 className="text-2xl font-semibold dark:text-white text-gray-900 transition-all duration-300 ease-in-out">
-            Simple Dictionary
-          </h2>
-          {rawData && rawData[0] && (
-            <span className="text-lg dark:text-gray-400 text-gray-600 transition-all duration-300 ease-in-out">
-              - {rawData[0].word}{" "}
-              {dataPerf && (
-                <span className="text-lg dark:text-gray-400 text-gray-600 transition-all duration-300 ease-in-out">
-                  ({dataPerf.toFixed(0)}ms)
-                </span>
-              )}
-            </span>
-          )}
-        </div>
-        <div className="flex space-x-4">
-          <Theme />
-          <Github />
-        </div>
-      </div>
-
       <div
         className={`flex flex-col items-center p-10 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 w-full max-w-3xl mt-20 transition-all duration-300 ease-in-out ${
           expandedCard !== null ? "blur-sm" : ""
@@ -303,6 +281,16 @@ export default function Home() {
                 {index < autoCompleteWords.words.length - 1 && ", "}
               </span>
             ))} ({autoCompleteWords.performance.toFixed(3)}ms)
+          </div>
+        )}
+
+        {dataPerf && (
+          <div className="mt-2 text-sm dark:text-gray-400 text-gray-600">
+            Data fetched in
+            <span className="font-semibold dark:text-gray-400 text-gray-600">
+              {" "}
+              {dataPerf.toFixed(0)}ms
+            </span>
           </div>
         )}
 
