@@ -73,9 +73,11 @@ class Trie {
 }
 
 export default Trie;
-
+// https://www.mit.edu/~ecprice/wordlist.10000
 const minTrie = new Trie();
+// https://gist.github.com/h3xx/1976236
 const medTrie = new Trie();
+// https://github.com/dwyl/english-words & https://github.com/meetDeveloper/freeDictionaryAPI/
 const maxTrie = new Trie();
 
 export async function buildTrie() {

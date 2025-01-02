@@ -2,10 +2,16 @@
 
 import { useEffect, useState } from "react";
 
+// todo: fix flicker on page load
 export default function Theme() {
-  const [theme, setTheme] = useState(
-    typeof window !== "undefined" ? localStorage.getItem("theme") : "light",
-  );
+  const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme) {
+      setTheme(storedTheme);
+    }
+  }, []);
 
   useEffect(() => {
     const root = window.document.documentElement;

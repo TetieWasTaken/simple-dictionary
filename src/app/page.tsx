@@ -16,12 +16,12 @@ import { getData } from "@/getData";
 import { buildTrie, getAutoComplete } from "@/trie";
 import { log } from "@/logger";
 
-// external libraries
-import { RiArrowDropDownLine } from "react-icons/ri";
-
 // components
 import Theme from "@/components/theme";
 import Github from "@/components/github";
+import SearchForm from "@/components/search";
+import ExpandedCardComponent from "@/components/expandedCard";
+import DictionaryEntryComponent from "@/components/dictionaryEntry";
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -40,6 +40,7 @@ export default function Home() {
   const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
   const [isFetching, setIsFetching] = useState(false);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
+  const [dataPerf, setDataPerf] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -117,6 +118,8 @@ export default function Home() {
 
     log(LOG_LEVEL.INFO, `Fetching data for ${word}`, "fetchData()");
 
+    const startPerf = performance.now();
+
     try {
       const res = await getData(word);
 
@@ -138,6 +141,14 @@ export default function Home() {
       setRawData(res);
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
+
+      const endPerf = performance.now();
+      setDataPerf(endPerf - startPerf);
+      log(
+        LOG_LEVEL.DEBUG,
+        `Fetching data for ${word} took ${endPerf - startPerf}ms`,
+        "fetchData()",
+      );
       router.push(`/?w=${encodeURIComponent(word)}`);
     } catch (error) {
       log(
@@ -234,16 +245,33 @@ export default function Home() {
     return text.replace(/:$/, "");
   }, []);
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies, tests
+  // todo: animations, effects, loading states, optimisations, merge etymologies, tests, fix cards not transitioning
   return (
-    <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="absolute top-4 right-4 flex space-x-4">
-        <Theme />
-        <Github />
+    <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
+      <div className="fixed top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gray-300 dark:bg-gray-700 shadow-lg transition-all duration-300 ease-in-out">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-2xl font-semibold dark:text-white text-gray-900 transition-all duration-300 ease-in-out">
+            Simple Dictionary
+          </h2>
+          {rawData && rawData[0] && (
+            <span className="text-lg dark:text-gray-400 text-gray-600 transition-all duration-300 ease-in-out">
+              - {rawData[0].word}{" "}
+              {dataPerf && (
+                <span className="text-lg dark:text-gray-400 text-gray-600 transition-all duration-300 ease-in-out">
+                  ({dataPerf.toFixed(0)}ms)
+                </span>
+              )}
+            </span>
+          )}
+        </div>
+        <div className="flex space-x-4">
+          <Theme />
+          <Github />
+        </div>
       </div>
 
       <div
-        className={`flex flex-col items-center p-10 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 w-full max-w-3xl transition-all duration-300 ease-in-out ${
+        className={`flex flex-col items-center p-10 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 w-full max-w-3xl mt-20 transition-all duration-300 ease-in-out ${
           expandedCard !== null ? "blur-sm" : ""
         }`}
       >
@@ -251,68 +279,14 @@ export default function Home() {
           Simple Dictionary
         </h2>
 
-        <form className="w-full">
-          <label className="mb-2 text-sm font-medium sr-only dark:text-white text-gray-900">
-            Search
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <svg
-                className="w-5 h-5 text-gray-400"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                />
-              </svg>
-            </div>
-            <input
-              type="search"
-              id="search"
-              className="block w-full p-6 ps-12 text-lg border rounded-lg dark:bg-gray-700 bg-gray-300 dark:border-gray-600 border-gray-400 dark:placeholder-gray-400 placeholder-gray-600 dark:text-white text-gray-900 focus:ring-blue-500 focus:border-blue-500 transition-transform duration-300"
-              placeholder="Search"
-              required
-              value={word}
-              onChange={async (e) => {
-                setWord(e.target.value);
-                await autoComplete(e.target.value);
-              }}
-              onKeyDown={handleKeyDown}
-              style={{ minWidth: "200px" }}
-              autoComplete="off"
-            />
-            <button
-              type="submit"
-              className="absolute end-2.5 bottom-2.5 dark:text-white text-gray-900 font-medium rounded-lg text-lg px-6 py-3 dark:bg-blue-600 bg-blue-400 dark:hover:bg-blue-700 hover:bg-blue-500 focus:ring-4 dark:focus:ring-blue-800 focus:ring-blue-600"
-              onClick={async (e) => {
-                e.preventDefault();
-                try {
-                  await fetchData(word);
-                } catch (error) {
-                  log(
-                    LOG_LEVEL.ERROR,
-                    `Failed to fetch data for ${word}`,
-                    "handleKeyDown()",
-                  );
-                  if (error instanceof Error) {
-                    log(LOG_LEVEL.ERROR, error.message, "handleKeyDown()");
-                  } else {
-                    log(LOG_LEVEL.ERROR, "Unknown error", "handleKeyDown()");
-                  }
-                }
-              }}
-            >
-              {lookupWord}
-            </button>
-          </div>
-        </form>
+        <SearchForm
+          word={word}
+          setWord={setWord}
+          autoComplete={autoComplete}
+          handleKeyDown={handleKeyDown}
+          fetchData={fetchData}
+          lookupWord={lookupWord}
+        />
 
         {autoCompleteWords && autoCompleteWords.words.length > 0 && (
           <div className="mt-2 text-sm dark:text-gray-400 text-gray-600">
@@ -351,110 +325,12 @@ export default function Home() {
       )}
 
       {expandedCard !== null && (
-        <>
-          <style jsx global>
-            {`
-          body { overflow: hidden; }
-        `}
-          </style>
-          <div
-            className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
-            onClick={() => setExpandedCard(null)}
-          >
-            <div
-              className="w-full max-w-5xl p-8 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                className="absolute top-2 end-2 dark:text-white text-gray-900 cursor-pointer focus:outline-none"
-                onClick={() => setExpandedCard(null)}
-              >
-                Close
-              </button>
-              <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
-                {rawData[expandedCard].word}
-              </h2>
-              {rawData[expandedCard].phonetic || rawData[expandedCard].phonetics
-                ? (
-                  <p className="text-lg italic dark:text-gray-400 text-gray-600 mb-4">
-                    {rawData[expandedCard].phonetic && (
-                      <span className="mr-2">
-                        {rawData[expandedCard].phonetic}
-                      </span>
-                    )}
-                    {rawData[expandedCard].phonetics &&
-                      rawData[expandedCard].phonetics[0] &&
-                      rawData[expandedCard].phonetics[0].audio &&
-                      (
-                        <button
-                          onClick={() => {
-                            const audio = new Audio(
-                              rawData[expandedCard].phonetics[0].audio,
-                            );
-                            audio.play();
-                          }}
-                        >
-                          🔊
-                        </button>
-                      )}
-                  </p>
-                )
-                : null}
-
-              {rawData[expandedCard].origin && (
-                <p className="text-lg dark:text-gray-400 text-gray-600 mb-4">
-                  Origin: {rawData[expandedCard].origin}
-                </p>
-              )}
-
-              {rawData[expandedCard].meanings.map((meaning, index) => (
-                <div key={index} className="mb-6">
-                  <h3 className="text-xl font-semibold dark:text-blue-400 text-blue-600">
-                    {meaning.partOfSpeech}
-                  </h3>
-                  {meaning.language && (
-                    <p className="text-sm dark:text-gray-400 text-gray-600">
-                      {meaning.language}
-                    </p>
-                  )}
-                  <p className="text-lg dark:text-white text-gray-900">
-                    {decodeHTML(meaning.definitions[0].definition)}
-                  </p>
-                  {meaning.definitions[0].example && (
-                    <p className="dark:text-gray-400 text-gray-600 mt-1">
-                      Example:{" "}
-                      <span className="italic">
-                        {decodeHTML(meaning.definitions[0].example)}
-                      </span>
-                    </p>
-                  )}
-                  {meaning.definitions[0].synonyms.length > 0 && (
-                    <p className="text-base dark:text-blue-400 text-blue-600">
-                      {meaning.definitions[0].synonyms.length > 1
-                        ? "Synonyms"
-                        : "Synonym"}
-                      :{" "}
-                      <span className="dark:text-gray-400 text-gray-600 italic">
-                        {meaning.definitions[0].synonyms.join(", ")}
-                      </span>
-                    </p>
-                  )}
-                  {meaning.definitions[0].antonyms.length > 0 && (
-                    <p className="text-base dark:text-blue-400 text-blue-600">
-                      {meaning.definitions[0].antonyms.length > 1
-                        ? "Antonyms"
-                        : "Antonym"}
-                      :{" "}
-                      <span className="dark:text-gray-400 text-gray-600 italic">
-                        {meaning.definitions[0].antonyms.join(", ")}
-                      </span>
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
+        <ExpandedCardComponent
+          expandedCard={expandedCard}
+          rawData={rawData}
+          setExpandedCardAction={setExpandedCard}
+          decodeHTMLAction={decodeHTML}
+        />
       )}
 
       <div
@@ -463,317 +339,20 @@ export default function Home() {
         } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
       >
         {rawData.map((data, defIndex) => (
-          <div
+          <DictionaryEntryComponent
             key={defIndex}
-            className="w-full max-w-3xl"
-          >
-            {rawData[defIndex - 1] &&
-              rawData[defIndex - 1].key !== data.key && (
-              <>
-                <hr className="my-8 border-gray-600" />
-                <button
-                  onClick={() => toggleLanguage(data.key)}
-                  className="text-lg dark:text-white text-gray-900 cursor-pointer mt-2 focus:outline-none max-w-3xl p-2 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300"
-                >
-                  <span className="inline-flex items-center">
-                    <RiArrowDropDownLine />
-                    {isLanguageOpen(data.key || "en") ? "Hide" : "Show"}{" "}
-                    {data.meanings[0].language || "English"} definitions
-                  </span>
-                </button>
-              </>
-            )}
-
-            <div
-              className={`w-full max-w-3xl rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 transition-all duration-300 ease-in-out overflow-hidden ${
-                isLanguageOpen(data.key || "en")
-                  ? "max-h-max opacity-100 p-8 mt-8"
-                  : "max-h-0 opacity-0 p-0 mt-0"
-              }`}
-              onClick={() => setExpandedCard(defIndex)}
-            >
-              <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
-                {data.word}
-              </h2>
-              {data.phonetic || data.phonetics
-                ? (
-                  <p className="text-lg italic dark:text-gray-400 text-gray-600 mb-4">
-                    {data.phonetic && (
-                      <span className="mr-2">{data.phonetic}</span>
-                    )}
-                    {data.phonetics && data.phonetics[0] &&
-                      data.phonetics[0].audio &&
-                      (
-                        <button
-                          onClick={() => {
-                            const audio = new Audio(
-                              data.phonetics[0].audio,
-                            );
-                            audio.play();
-                          }}
-                        >
-                          🔊
-                        </button>
-                      )}
-                  </p>
-                )
-                : null}
-
-              {data.origin && (
-                <p className="text-lg dark:text-gray-400 text-gray-600 mb-4">
-                  Origin: {data.origin}
-                </p>
-              )}
-
-              {data.meanings.map((meaning, index) => (
-                <div key={index} className="mb-6">
-                  <h3 className="text-xl font-semibold dark:text-blue-400 text-blue-600">
-                    {meaning.partOfSpeech}
-                  </h3>
-                  {meaning.language && (
-                    <p className="text-sm dark:text-gray-400 text-gray-600">
-                      {meaning.language}
-                    </p>
-                  )}
-                  {meaning.definitions.length > 1
-                    ? (
-                      <>
-                        <p className="text-lg dark:text-white text-gray-900">
-                          {decodeHTML(meaning.definitions[0].definition)}
-                        </p>
-                        {meaning.definitions[0].example && (
-                          <p className="dark:text-gray-400 text-gray-600 mt-1">
-                            Example:{" "}
-                            <span className="italic">
-                              {decodeHTML(meaning.definitions[0].example)}
-                            </span>
-                          </p>
-                        )}
-                        {meaning.definitions[0].synonyms.length > 0 && (
-                          <p className="text-base dark:text-blue-400 text-blue-600">
-                            {meaning.definitions[0].synonyms.length > 1
-                              ? "Synonyms"
-                              : "Synonym"}
-                            :{" "}
-                            <span className="dark:text-gray-400 text-gray-600 italic">
-                              {meaning.definitions[0].synonyms.join(", ")}
-                            </span>
-                          </p>
-                        )}
-                        {meaning.definitions[0].antonyms.length > 0 && (
-                          <p className="text-base dark:text-blue-400 text-blue-600">
-                            {meaning.definitions[0].antonyms.length > 1
-                              ? "Antonyms"
-                              : "Antonym"}
-                            :{" "}
-                            <span className="dark:text-gray-400 text-gray-600 italic">
-                              {meaning.definitions[0].antonyms.join(", ")}
-                            </span>
-                          </p>
-                        )}
-                        <div className="mb-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleOpen(`${index}-${defIndex}`);
-                            }}
-                            className="text-lg dark:text-blue-300 text-blue-600 cursor-pointer mt-2 focus:outline-none hover:border-b-2 hover:border-blue-400"
-                          >
-                            <span className="inline-flex items-center">
-                              {meaning.definitions.length - 1} More
-                              {meaning.definitions.length > 2
-                                ? " definitions "
-                                : " definition "}
-                              available
-                              <RiArrowDropDownLine />
-                            </span>
-                          </button>
-                          <div
-                            className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                              isOpen(`${index}-${defIndex}`)
-                                ? "max-h-max opacity-100"
-                                : "max-h-0 opacity-0"
-                            }`}
-                          >
-                            {meaning.definitions.slice(1).map((
-                              definition,
-                              defIndex,
-                            ) => (
-                              <div key={defIndex} className="mt-2">
-                                <hr className="my-2 dark:border-gray-600 border-gray-400" />
-                                <p className="text-lg dark:text-white text-gray-900">
-                                  {decodeHTML(definition.definition)}
-                                </p>
-                                {definition.example && (
-                                  <p className="dark:text-gray-400 text-gray-600 mt-1">
-                                    Example:{" "}
-                                    <span className="italic">
-                                      {decodeHTML(definition.example)}
-                                    </span>
-                                  </p>
-                                )}
-                                {definition.synonyms.length > 0 && (
-                                  <p className="text-base dark:text-blue-400 text-blue-600">
-                                    {definition.synonyms.length > 1
-                                      ? "Synonyms"
-                                      : "Synonym"}
-                                    :{" "}
-                                    <span className="dark:text-gray-400 text-gray-600 italic">
-                                      {definition.synonyms.join(", ")}
-                                    </span>
-                                  </p>
-                                )}
-                                {definition.antonyms.length > 0 && (
-                                  <p className="text-base dark:text-blue-400 text-blue-600">
-                                    {definition.antonyms.length > 1
-                                      ? "Antonyms"
-                                      : "Antonym"}
-                                    :{" "}
-                                    <span className="dark:text-gray-400 text-gray-600 italic">
-                                      {definition.antonyms.join(", ")}
-                                    </span>
-                                  </p>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )
-                    : (
-                      meaning.definitions.map((definition, defIndex) => (
-                        <div key={defIndex} className="mb-4">
-                          <p className="text-lg dark:text-white text-gray-900">
-                            {decodeHTML(definition.definition)}
-                          </p>
-                          {definition.example && (
-                            <p className="dark:text-gray-400 text-gray-600 mt-1">
-                              Example:{" "}
-                              <span className="italic">
-                                {decodeHTML(definition.example)}
-                              </span>
-                            </p>
-                          )}
-                          {definition.synonyms.length > 0 && (
-                            <p className="text-base dark:text-blue-400 text-blue-600">
-                              {definition.synonyms.length > 1
-                                ? "Synonyms"
-                                : "Synonym"}
-                              :{" "}
-                              <span className="dark:text-gray-400 text-gray-600 italic">
-                                {definition.synonyms.join(", ")}
-                              </span>
-                            </p>
-                          )}
-                          {definition.antonyms.length > 0 && (
-                            <p className="text-base dark:text-blue-400 text-blue-600">
-                              {definition.antonyms.length > 1
-                                ? "Antonyms"
-                                : "Antonym"}
-                              :{" "}
-                              <span className="dark:text-gray-400 text-gray-600 italic">
-                                {definition.antonyms.join(", ")}
-                              </span>
-                            </p>
-                          )}
-                        </div>
-                      ))
-                    )}
-                </div>
-              ))}
-
-              <hr className="my-4 dark:border-gray-600 border-gray-400" />
-
-              {source && (
-                <p className="text-sm dark:text-gray-400 text-gray-600">
-                  Definition source:{" "}
-                  <a
-                    href={source}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {source}
-                  </a>
-                  {!data.isManualSearch && (
-                    <>
-                      {" "}
-                      <span className="dark:text-gray-400 text-gray-600">
-                        |
-                      </span>{" "}
-                      <a
-                        href="https://dictionaryapi.dev/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                      >
-                        dictionaryapi.dev
-                      </a>
-                    </>
-                  )}
-                </p>
-              )}
-
-              {license && (
-                <p className="text-sm dark:text-gray-400 text-gray-600">
-                  Definition license:{" "}
-                  <a
-                    href={license.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    {license.name}
-                  </a>
-                </p>
-              )}
-
-              <hr className="my-4 dark:border-gray-600 border-gray-400" />
-
-              {data.phonetics && data.phonetics[0] && (
-                <div>
-                  {data.phonetics[0].sourceUrl && (
-                    <p className="text-sm dark:text-gray-400 text-gray-600">
-                      Phonetics Source:{" "}
-                      <a
-                        href={data.phonetics[0].sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                      >
-                        {data.phonetics[0].sourceUrl}
-                      </a>{" "}
-                      <span className="dark:text-gray-400 text-gray-600">
-                        |
-                      </span>{" "}
-                      <a
-                        href="https://dictionaryapi.dev/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                      >
-                        dictionaryapi.dev
-                      </a>
-                    </p>
-                  )}
-
-                  {data.phonetics[0].license && (
-                    <p className="text-sm dark:text-gray-400 text-gray-600">
-                      Phonetics License:{" "}
-                      <a
-                        href={data.phonetics[0].license.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="underline"
-                      >
-                        {data.phonetics[0].license.name}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
+            data={data}
+            defIndex={defIndex}
+            toggleOpen={toggleOpen}
+            isOpen={isOpen}
+            toggleLanguage={toggleLanguage}
+            isLanguageOpen={isLanguageOpen}
+            source={source}
+            setExpandedCard={setExpandedCard}
+            rawData={rawData}
+            decodeHTML={decodeHTML}
+            license={license}
+          />
         ))}
       </div>
     </div>

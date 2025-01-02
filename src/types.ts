@@ -13,7 +13,7 @@ export interface Definition {
   antonyms: string[];
 }
 
-interface Meaning {
+export interface Meaning {
   partOfSpeech: string;
   antonyms: string[];
   definitions: Definition[];
