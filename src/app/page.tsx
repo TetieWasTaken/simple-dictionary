@@ -44,7 +44,9 @@ export default function Home() {
 
   const isOpen = (id: string) => openedIndex.includes(id);
 
-  const toggleLanguage = (language: string) => {
+  const toggleLanguage = (language: string | undefined) => {
+    if (!language) return;
+
     log(
       LOG_LEVEL.DEBUG,
       `Toggling language open for ${language}`,
@@ -75,7 +77,19 @@ export default function Home() {
   const fetchData = async (word: string) => {
     setIsFetching(true);
     setError(undefined);
-    rawData.length > 0 && setRawData([]);
+    if (!rawData.some((entry) => entry.word === word)) {
+      setRawData([]);
+    } else {
+      log(
+        LOG_LEVEL.DEBUG,
+        `Data for ${word} already exists, not fetching`,
+        "fetchData()",
+      );
+      setIsFetching(false);
+      return;
+    }
+    setOpenedIndex([]);
+    setOpenedLanguages(["en"]);
 
     // todo: if word is already in data, don't fetch again & word sanitisation
 
@@ -285,7 +299,7 @@ export default function Home() {
               <>
                 <hr className="my-8 border-gray-600" />
                 <button
-                  onClick={() => toggleLanguage(data.key || "en")}
+                  onClick={() => toggleLanguage(data.key)}
                   className="text-lg text-white cursor-pointer mt-2 focus:outline-none max-w-3xl p-2 rounded-lg shadow-lg bg-gray-700"
                 >
                   <span className="inline-flex items-center">
@@ -300,12 +314,9 @@ export default function Home() {
             <div
               className={`w-full max-w-3xl rounded-lg shadow-lg bg-gray-700 transition-all duration-300 ease-in-out overflow-hidden ${
                 isLanguageOpen(data.key || "en")
-                  ? "max-h-screen opacity-100 p-8 mt-8"
+                  ? "max-h-max opacity-100 p-8 mt-8"
                   : "max-h-0 opacity-0 p-0 mt-0"
               }`}
-              style={{
-                maxHeight: isLanguageOpen(data.key || "en") ? `1000px` : "0",
-              }}
             >
               <h2 className="text-3xl font-bold mb-2 text-white">
                 {data.word}
@@ -403,14 +414,9 @@ export default function Home() {
                           <div
                             className={`transition-all duration-300 ease-in-out overflow-hidden ${
                               isOpen(`${index}-${defIndex}`)
-                                ? "max-h-screen opacity-100"
+                                ? "max-h-max opacity-100"
                                 : "max-h-0 opacity-0"
                             }`}
-                            style={{
-                              maxHeight: isOpen(`${index}-${defIndex}`)
-                                ? `1000px`
-                                : "0",
-                            }}
                           >
                             {meaning.definitions.slice(1).map((
                               definition,
@@ -545,7 +551,7 @@ export default function Home() {
 
               <hr className="my-4 border-gray-600" />
 
-              {data.phonetics[0] && (
+              {data.phonetics && data.phonetics[0] && (
                 <div>
                   {data.phonetics[0].sourceUrl && (
                     <p className="text-sm text-gray-400">
