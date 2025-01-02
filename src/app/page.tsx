@@ -1,7 +1,8 @@
 "use client";
 
-// react imports
+// react & next
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // types
 import type { AutocompleteResult, DictionaryEntry, License } from "@/types";
@@ -19,7 +20,10 @@ import { log } from "@/logger";
 import { RiArrowDropDownLine } from "react-icons/ri";
 
 export default function Home() {
-  const [word, setWord] = useState("");
+  const searchParams = useSearchParams();
+  const [word, setWord] = useState(
+    decodeURIComponent(searchParams.get("w") || ""),
+  );
   const [rawData, setRawData] = useState<DictionaryEntry[]>([]);
   const [lookupWord, setLookupWord] = useState("");
   const [source, setSource] = useState("");
@@ -31,6 +35,8 @@ export default function Home() {
   const [openedIndex, setOpenedIndex] = useState<string[]>([]);
   const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
   const [isFetching, setIsFetching] = useState(false);
+
+  const router = useRouter();
 
   const toggleOpen = (id: string) => {
     log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
@@ -102,8 +108,6 @@ export default function Home() {
     try {
       const res = await getData(word);
 
-      console.log(res);
-
       if ("error" in res) {
         if (res.type !== ErrorType.NotFound) {
           log(
@@ -121,6 +125,7 @@ export default function Home() {
       setRawData(res);
       setSource(res[0].sourceUrls[0]);
       setLicense(res[0].license);
+      router.push(`/?w=${encodeURIComponent(word)}`);
     } catch (error) {
       log(
         LOG_LEVEL.ERROR,
