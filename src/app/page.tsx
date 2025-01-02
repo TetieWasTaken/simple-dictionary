@@ -35,6 +35,7 @@ export default function Home() {
   const [openedIndex, setOpenedIndex] = useState<string[]>([]);
   const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
   const [isFetching, setIsFetching] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
   const router = useRouter();
 
@@ -229,10 +230,14 @@ export default function Home() {
     return text.replace(/:$/, "");
   }, []);
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies, tests, expandable cards
+  // todo: animations, effects, loading states, optimisations, merge etymologies, tests
   return (
     <div className="bg-gray-800 min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl">
+      <div
+        className={`flex flex-col items-center p-10 rounded-lg shadow-lg bg-gray-700 w-full max-w-3xl transition-all duration-300 ease-in-out ${
+          expandedCard !== null ? "blur-sm" : ""
+        }`}
+      >
         <h2 className="text-3xl font-semibold mb-6 text-white">
           Simple Dictionary
         </h2>
@@ -326,10 +331,121 @@ export default function Home() {
         )}
       </div>
 
+      {isFetching && (
+        <div className="mt-8 text-white text-lg">Fetching data...</div>
+      )}
+
+      {expandedCard !== null && (
+        <>
+          <style jsx global>
+            {`
+              body { overflow: hidden; }
+            `}
+          </style>
+          <div
+            className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center"
+            onClick={() => setExpandedCard(null)}
+          >
+            <div
+              className="w-full max-w-5xl p-8 rounded-lg shadow-lg bg-gray-700"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="absolute top-2 end-2 text-white cursor-pointer focus:outline-none"
+                onClick={() => setExpandedCard(null)}
+              >
+                Close
+              </button>
+              <h2 className="text-3xl font-bold mb-2 text-white">
+                {rawData[expandedCard].word}
+              </h2>
+              {rawData[expandedCard].phonetic || rawData[expandedCard].phonetics
+                ? (
+                  <p className="text-lg italic text-gray-400 mb-4">
+                    {rawData[expandedCard].phonetic && (
+                      <span className="mr-2">
+                        {rawData[expandedCard].phonetic}
+                      </span>
+                    )}
+                    {rawData[expandedCard].phonetics &&
+                      rawData[expandedCard].phonetics[0] &&
+                      rawData[expandedCard].phonetics[0].audio &&
+                      (
+                        <button
+                          onClick={() => {
+                            const audio = new Audio(
+                              rawData[expandedCard].phonetics[0].audio,
+                            );
+                            audio.play();
+                          }}
+                        >
+                          🔊
+                        </button>
+                      )}
+                  </p>
+                )
+                : null}
+
+              {rawData[expandedCard].origin && (
+                <p className="text-lg text-gray-400 mb-4">
+                  Origin: {rawData[expandedCard].origin}
+                </p>
+              )}
+
+              {rawData[expandedCard].meanings.map((meaning, index) => (
+                <div key={index} className="mb-6">
+                  <h3 className="text-xl font-semibold text-blue-400">
+                    {meaning.partOfSpeech}
+                  </h3>
+                  {meaning.language && (
+                    <p className="text-sm text-gray-400">
+                      {meaning.language}
+                    </p>
+                  )}
+                  <p className="text-lg text-white">
+                    {decodeHTML(meaning.definitions[0].definition)}
+                  </p>
+                  {meaning.definitions[0].example && (
+                    <p className="text-gray-400 mt-1">
+                      Example:{" "}
+                      <span className="italic">
+                        {decodeHTML(meaning.definitions[0].example)}
+                      </span>
+                    </p>
+                  )}
+                  {meaning.definitions[0].synonyms.length > 0 && (
+                    <p className="text-base text-blue-400">
+                      {meaning.definitions[0].synonyms.length > 1
+                        ? "Synonyms"
+                        : "Synonym"}
+                      :{" "}
+                      <span className="text-gray-400 italic">
+                        {meaning.definitions[0].synonyms.join(", ")}
+                      </span>
+                    </p>
+                  )}
+                  {meaning.definitions[0].antonyms.length > 0 && (
+                    <p className="text-base text-blue-400">
+                      {meaning.definitions[0].antonyms.length > 1
+                        ? "Antonyms"
+                        : "Antonym"}
+                      :{" "}
+                      <span className="text-gray-400 italic">
+                        {meaning.definitions[0].antonyms.join(", ")}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <div
         className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
           rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
-        }`}
+        } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
       >
         {rawData.map((data, defIndex) => (
           <div
@@ -359,6 +475,7 @@ export default function Home() {
                   ? "max-h-max opacity-100 p-8 mt-8"
                   : "max-h-0 opacity-0 p-0 mt-0"
               }`}
+              onClick={() => setExpandedCard(defIndex)}
             >
               <h2 className="text-3xl font-bold mb-2 text-white">
                 {data.word}

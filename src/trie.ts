@@ -67,6 +67,7 @@ const minTrie = new Trie();
 const medTrie = new Trie();
 const maxTrie = new Trie();
 
+// todo: have a pre-built trie
 export async function buildTrie() {
   if (
     minTrie.root.children.size > 0 && medTrie.root.children.size > 0 &&
@@ -110,6 +111,7 @@ export async function buildTrie() {
   );
 }
 
+// todo: filter out words that don't exist in the dictionary
 export async function getAutoComplete(word: string) {
   if (!word) {
     return;
