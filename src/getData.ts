@@ -109,14 +109,41 @@ const rateLimit = async () => {
   requestCount++;
 };
 
+let capitalisedWords: string[] = [];
+
 const fetchFromWiktionary = async (
   word: string,
+  isRecursion = false,
 ): Promise<DictionaryEntry[]> => {
   log(
     LOG_LEVEL.INFO,
     `Fetching data from Wiktionary for word: ${word}`,
     "fetchFromWiktionary()",
   );
+
+  if (capitalisedWords.length === 0) {
+    const fs = (await import("fs")).promises;
+    const capitalised = await fs.readFile(
+      process.cwd() +
+        "/src/contents/dictionary/capitalised.txt",
+      "utf-8",
+    );
+    capitalisedWords = capitalised.split("\n");
+  }
+
+  const capitalisedWord = capitalisedWords.find((w) =>
+    w.toLowerCase() === word
+  );
+
+  if (capitalisedWord) {
+    log(
+      LOG_LEVEL.DEBUG,
+      `Word is capitalised. Fetching data instead for word: ${capitalisedWord}`,
+      "fetchFromWiktionary()",
+    );
+    return await fetchFromWiktionary(capitalisedWord, true);
+  }
+
   await rateLimit();
 
   const res = await fetch(
@@ -137,6 +164,12 @@ const fetchFromWiktionary = async (
         `Word not found in Wiktionary for word: ${word}`,
         "fetchFromWiktionary()",
       );
+
+      if (!isRecursion) {
+        const capitalisedWord = word.charAt(0).toUpperCase() + word.slice(1);
+        return await fetchFromWiktionary(capitalisedWord, true);
+      }
+
       throw new DictionaryError(ErrorType.NotFound);
     } else {
       log(
@@ -210,6 +243,7 @@ export const getData = async (
             `Unknown error fetching data from Wiktionary for word: ${word}`,
             "getData()",
           );
+          console.error(error);
           return serialiseError(new DictionaryError(ErrorType.Failed));
         }
       }

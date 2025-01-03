@@ -259,7 +259,7 @@ function HomeContent() {
   }, []);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies, tests, fix cards not transitioning, route handlers?
+  // todo: tests, fix cards not transitioning, route handlers?
   return (
     <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
       <div
@@ -353,22 +353,25 @@ function HomeContent() {
           className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
             rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
           } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
+          key={word}
         >
           {rawData.map((data, defIndex) => (
-            <DictionaryEntryComponent
-              key={defIndex}
-              data={data}
-              defIndex={defIndex}
-              toggleOpen={toggleOpen}
-              isOpen={isOpen}
-              toggleLanguage={toggleLanguage}
-              isLanguageOpen={isLanguageOpen}
-              source={source}
-              setExpandedCard={setExpandedCard}
-              rawData={rawData}
-              decodeHTML={decodeHTML}
-              license={license}
-            />
+            <Suspense fallback={<div key={defIndex}>Loading...</div>}>
+              <DictionaryEntryComponent
+                key={defIndex}
+                data={data}
+                defIndex={defIndex}
+                toggleOpen={toggleOpen}
+                isOpen={isOpen}
+                toggleLanguage={toggleLanguage}
+                isLanguageOpen={isLanguageOpen}
+                source={source}
+                setExpandedCard={setExpandedCard}
+                rawData={rawData}
+                decodeHTML={decodeHTML}
+                license={license}
+              />
+            </Suspense>
           ))}
         </div>
       )}
