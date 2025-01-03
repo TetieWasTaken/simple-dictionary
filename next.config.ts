@@ -1,6 +1,6 @@
 import createMDX from "@next/mdx";
+import type { NextConfig } from "next";
 
-/** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   logging: false,
   pageExtensions: ["tsx", "mdx"],

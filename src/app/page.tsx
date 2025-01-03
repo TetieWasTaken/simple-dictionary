@@ -235,6 +235,8 @@ export default function Home() {
       "autoComplete()",
     );
 
+    setDataPerf(null);
+
     setAutoCompleteWords(autoCompleteWordResult);
   }, [isFetching, sanitiseInput]);
 
@@ -265,6 +267,17 @@ export default function Home() {
           fetchData={fetchData}
           lookupWord={lookupWord}
         />
+
+        <div className="mt-4 text-xs dark:text-gray-400 text-gray-600">
+          By using this service, you agree to the terms and policies outlined in
+          our{" "}
+          <a
+            href="/info"
+            className="underline dark:text-blue-400 text-blue-600 hover:text-blue-800"
+          >
+            Legal Statement
+          </a>.
+        </div>
 
         {autoCompleteWords && autoCompleteWords.words.length > 0 && (
           <div className="mt-2 text-sm dark:text-gray-400 text-gray-600">

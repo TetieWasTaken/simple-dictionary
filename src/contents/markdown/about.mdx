@@ -1,3 +1,14 @@
-Testing
-**bold**
-_italic_
+Simple Dictionary is a [NextJS](https://nextjs.org/)-based dictionary app that provides users with a fast search algorithm to access definitions. It uses [Free Dictionary API](https://dictionaryapi.dev/) and the [Wiktionary API](https://en.wiktionary.org/api/) to get the corresponding etymologies, pronunciation, synonyms, antonyms, and examples of the word. It is made for [High Seas 2024-2025](https://highseas.hackclub.com/) by [Hack Club](https://hackclub.com/). With over 20 hours of coding time.
+<br />
+The autocomplete feature uses three text files:
+- **10k_words.txt**: From [MITs 10k most common English words](https://www.mit.edu/~ecprice/wordlist.10000)
+- **100k_words.txt**: From the [most used words in Wiktionary compiled by h3xx](https://gist.github.com/h3xx/1976236)
+- **530k_words.txt**: From [dwyls list of english words](https://github.com/dwyl/english-words) and the [meta word list from dictionaryapi.dev](https://github.com/meetDeveloper/freeDictionaryAPI/)
+
+Each file is processed to remove duplicates and capitalised letters
+<br />
+The autocomplete algorithm employs a trie data structure to efficiently store and retrieve words based on their prefixes. A separate trie is built for each text file. Additionally, a [Levenshtein distance algorithm](https://github.com/ka-weihe/fastest-levenshtein) ([MIT license](https://github.com/ka-weihe/fastest-levenshtein/blob/master/LICENSE.md)) is applied to improve search results by accommodating minor typographical errors or variations in user input.
+
+The external link icon is made by [css.gg](https://github.com/astrit/css.gg) licensed under [MIT](https://github.com/astrit/css.gg/blob/master/LICENSE)
+
+`{/*todo: add react-icons credit?*/}`
