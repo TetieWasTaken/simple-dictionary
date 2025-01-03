@@ -1,9 +1,9 @@
-"use client";
+"use server";
 
 import Image from "next/image";
 import Link from "next/link";
 
-export default function Github() {
+export default async function Github() {
   return (
     <Link
       href="https://github.com/TetieWasTaken/simple-dictionary"

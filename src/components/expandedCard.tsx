@@ -1,5 +1,3 @@
-"use client";
-
 import type { DictionaryEntry } from "@/types";
 import type { JSX } from "react";
 
