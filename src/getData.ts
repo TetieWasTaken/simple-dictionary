@@ -258,11 +258,22 @@ export const getData = async (
     }
   }
 
-  const data = await res.json();
+  const data = await res.json() as DictionaryEntry[];
   log(
     LOG_LEVEL.INFO,
     `Data fetched successfully from dictionary API for word: ${word}`,
     "getData()",
   );
+
+  data.forEach((entry) => {
+    entry.inaccurate = entry.sourceUrls.length > 1;
+  });
+
+  data.sort((a, b) => {
+    if (a.inaccurate && !b.inaccurate) return 1;
+    if (!a.inaccurate && b.inaccurate) return -1;
+    return 0;
+  });
+
   return data;
 };

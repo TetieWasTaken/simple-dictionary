@@ -356,7 +356,7 @@ function HomeContent() {
           key={word}
         >
           {rawData.map((data, defIndex) => (
-            <Suspense fallback={<div key={defIndex}>Loading...</div>}>
+            <Suspense key={defIndex} fallback={<div>Loading...</div>}>
               <DictionaryEntryComponent
                 key={defIndex}
                 data={data}

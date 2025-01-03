@@ -8,6 +8,12 @@ const RiArrowDropDownLine = dynamic(() =>
   import("react-icons/ri").then((mod) => mod.RiArrowDropDownLine)
 );
 
+const hasMultipleKeys = (rawData: DictionaryEntry[], defIndex: number) =>
+  (rawData[defIndex - 1] &&
+    rawData[defIndex - 1].key === rawData[defIndex].key) ||
+  (rawData[defIndex + 1] &&
+    rawData[defIndex + 1].key === rawData[defIndex].key);
+
 interface DictionaryEntryProps {
   data: DictionaryEntry;
   defIndex: number;
@@ -62,9 +68,25 @@ export default function DictionaryEntryComponent({
           isLanguageOpen(data.key || "en")
             ? "max-h-max opacity-100 p-8 mt-8"
             : "max-h-0 opacity-0 p-0 mt-0"
+        } ${
+          data.inaccurate
+            ? "border-2 dark:border-yellow-500 border-amber-600"
+            : ""
         }`}
         onClick={() => setExpandedCard(defIndex)}
       >
+        {data.inaccurate && (
+          <p className="text-sm dark:text-yellow-500 text-amber-600">
+            WARNING! This definition may be inaccurate due to it possibly being
+            sourced from multiple (unrelated) sources.
+          </p>
+        )}
+        {isLanguageOpen(data.key || "en") &&
+          hasMultipleKeys(rawData, defIndex) && (
+          <p className="text-sm dark:text-gray-400 text-gray-600 mt-2">
+            entry {defIndex + 1}
+          </p>
+        )}
         <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
           {data.word}
         </h2>

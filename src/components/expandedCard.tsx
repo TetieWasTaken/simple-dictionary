@@ -26,7 +26,11 @@ export default function expandedCardComponent({
         onClick={() => setExpandedCardAction(null)}
       >
         <div
-          className="w-full max-w-5xl p-8 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300"
+          className={`w-full max-w-5xl p-8 rounded-lg shadow-lg dark:bg-gray-700 bg-gray-300 ${
+            rawData[expandedCard].inaccurate
+              ? "border-2 dark:border-yellow-500 border-amber-600"
+              : ""
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -35,6 +39,12 @@ export default function expandedCardComponent({
           >
             Close
           </button>
+          {rawData[expandedCard].inaccurate && (
+            <p className="text-sm dark:text-yellow-500 text-amber-600">
+              WARNING! This definition may be inaccurate due to it possibly
+              being sourced from multiple (unrelated) sources.
+            </p>
+          )}
           <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
             {rawData[expandedCard].word}
           </h2>

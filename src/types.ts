@@ -37,6 +37,7 @@ export interface DictionaryEntry {
   sourceUrls: string[]; // unused (too: filter out sources that seem unrelated (cat/catamaran))
   isManualSearch?: boolean;
   key?: string;
+  inaccurate?: boolean;
 }
 
 export interface AutocompleteResult {
