@@ -71,6 +71,7 @@ class Trie {
 }
 
 export default Trie;
+
 // https://www.mit.edu/~ecprice/wordlist.10000
 const minTrie = new Trie();
 // https://gist.github.com/h3xx/1976236

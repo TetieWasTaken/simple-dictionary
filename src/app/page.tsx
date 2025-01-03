@@ -1,7 +1,7 @@
 "use client";
 
 // react & next
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -27,62 +27,13 @@ const ExpandedCardComponent = dynamic(
 );
 const SearchForm = dynamic(() => import("@/components/search"));
 
-export default function Home() {
+function HomeContent() {
   const searchParams = useSearchParams();
   const [word, setWord] = useState(
     decodeURIComponent(searchParams.get("w") || ""),
   );
-  const [rawData, setRawData] = useState<DictionaryEntry[]>([]);
+
   const [lookupWord, setLookupWord] = useState("");
-  const [source, setSource] = useState("");
-  const [license, setLicense] = useState<License>();
-  const [error, setError] = useState<DictionaryError>();
-  const [autoCompleteWords, setAutoCompleteWords] = useState<
-    AutocompleteResult | null
-  >(null);
-  const [openedIndex, setOpenedIndex] = useState<string[]>([]);
-  const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
-  const [isFetching, setIsFetching] = useState(false);
-  const [expandedCard, setExpandedCard] = useState<number | null>(null);
-  const [dataPerf, setDataPerf] = useState<number | null>(null);
-
-  const router = useRouter();
-
-  const toggleOpen = useCallback((id: string) => {
-    log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
-
-    setOpenedIndex((prevOpenedIndex) =>
-      prevOpenedIndex.includes(id)
-        ? prevOpenedIndex.filter((index) => index !== id)
-        : [...prevOpenedIndex, id]
-    );
-  }, []);
-
-  const isOpen = useCallback((id: string) => openedIndex.includes(id), [
-    openedIndex,
-  ]);
-
-  const toggleLanguage = useCallback((language: string | undefined) => {
-    if (!language) return;
-
-    log(
-      LOG_LEVEL.DEBUG,
-      `Toggling language open for ${language}`,
-      "toggleLanguage()",
-    );
-
-    setOpenedLanguages((prevOpenedLanguages) =>
-      prevOpenedLanguages.includes(language)
-        ? prevOpenedLanguages.filter((lang) => lang !== language)
-        : [...prevOpenedLanguages, language]
-    );
-  }, []);
-
-  const isLanguageOpen = useCallback(
-    (language: string) => openedLanguages.includes(language),
-    [openedLanguages],
-  );
-
   useEffect(() => {
     const randomSynonym =
       LOOKUP_SYNONYMS[Math.floor(Math.random() * LOOKUP_SYNONYMS.length)];
@@ -94,12 +45,71 @@ export default function Home() {
     setLookupWord(randomSynonym);
   }, []);
 
+  useEffect(() => {
+    const loadTrie = async () => {
+      const buildTrie = (await import("@/trie")).buildTrie;
+      buildTrie();
+    };
+    loadTrie();
+  }, []);
+
+  const router = useRouter();
+
   const sanitiseInput = useCallback(
     (input: string) =>
       input.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, "").trim(),
     [],
   );
 
+  const [isFetching, setIsFetching] = useState(false);
+  const [dataPerf, setDataPerf] = useState<number | null>(null);
+  const [autoCompleteWords, setAutoCompleteWords] = useState<
+    AutocompleteResult | null
+  >(null);
+  const autoComplete = useCallback(async (word: string) => {
+    if (isFetching) return;
+
+    word = sanitiseInput(word);
+
+    if (word.length < 2) {
+      setAutoCompleteWords(null);
+      return;
+    }
+
+    const start = performance.now();
+    const getAutoComplete = (await import("@/trie")).getAutoComplete;
+    const autoCompleteWordResult = await getAutoComplete(word);
+    const end = performance.now();
+
+    log(
+      LOG_LEVEL.DEBUG,
+      `Auto complete took ${end - start}ms`,
+      "autoComplete()",
+    );
+
+    if (!autoCompleteWordResult) {
+      setAutoCompleteWords(null);
+      return;
+    }
+
+    log(
+      LOG_LEVEL.DEBUG,
+      `Auto complete words: ${autoCompleteWordResult.words}`,
+      "autoComplete()",
+    );
+
+    setDataPerf(null);
+
+    setAutoCompleteWords(autoCompleteWordResult);
+  }, [isFetching, sanitiseInput]);
+
+  const [openedIndex, setOpenedIndex] = useState<string[]>([]);
+  const [openedLanguages, setOpenedLanguages] = useState<string[]>(["en"]);
+
+  const [rawData, setRawData] = useState<DictionaryEntry[]>([]);
+  const [source, setSource] = useState("");
+  const [license, setLicense] = useState<License>();
+  const [error, setError] = useState<DictionaryError>();
   const fetchData = useCallback(async (word: string) => {
     setIsFetching(true);
     setError(undefined);
@@ -206,50 +216,40 @@ export default function Home() {
     [autoCompleteWords, fetchData, word],
   );
 
-  useEffect(() => {
-    const loadTrie = async () => {
-      const buildTrie = (await import("@/trie")).buildTrie;
-      buildTrie();
-    };
-    loadTrie();
+  const toggleOpen = useCallback((id: string) => {
+    log(LOG_LEVEL.DEBUG, `Toggling open for ${id}`, "toggleOpen()");
+
+    setOpenedIndex((prevOpenedIndex) =>
+      prevOpenedIndex.includes(id)
+        ? prevOpenedIndex.filter((index) => index !== id)
+        : [...prevOpenedIndex, id]
+    );
   }, []);
 
-  const autoComplete = useCallback(async (word: string) => {
-    if (isFetching) return;
+  const isOpen = useCallback((id: string) => openedIndex.includes(id), [
+    openedIndex,
+  ]);
 
-    word = sanitiseInput(word);
-
-    if (word.length < 2) {
-      setAutoCompleteWords(null);
-      return;
-    }
-
-    const start = performance.now();
-    const getAutoComplete = (await import("@/trie")).getAutoComplete;
-    const autoCompleteWordResult = await getAutoComplete(word);
-    const end = performance.now();
+  const toggleLanguage = useCallback((language: string | undefined) => {
+    if (!language) return;
 
     log(
       LOG_LEVEL.DEBUG,
-      `Auto complete took ${end - start}ms`,
-      "autoComplete()",
+      `Toggling language open for ${language}`,
+      "toggleLanguage()",
     );
 
-    if (!autoCompleteWordResult) {
-      setAutoCompleteWords(null);
-      return;
-    }
-
-    log(
-      LOG_LEVEL.DEBUG,
-      `Auto complete words: ${autoCompleteWordResult.words}`,
-      "autoComplete()",
+    setOpenedLanguages((prevOpenedLanguages) =>
+      prevOpenedLanguages.includes(language)
+        ? prevOpenedLanguages.filter((lang) => lang !== language)
+        : [...prevOpenedLanguages, language]
     );
+  }, []);
 
-    setDataPerf(null);
-
-    setAutoCompleteWords(autoCompleteWordResult);
-  }, [isFetching, sanitiseInput]);
+  const isLanguageOpen = useCallback(
+    (language: string) => openedLanguages.includes(language),
+    [openedLanguages],
+  );
 
   const decodeHTML = useCallback((input: string) => {
     const doc = new DOMParser().parseFromString(input, "text/html");
@@ -257,8 +257,9 @@ export default function Home() {
     if (!text) return input;
     return text.replace(/:$/, "");
   }, []);
+  const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
-  // todo: animations, effects, loading states, optimisations, merge etymologies, tests, fix cards not transitioning
+  // todo: animations, effects, loading states, optimisations, merge etymologies, tests, fix cards not transitioning, route handlers?
   return (
     <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
       <div
@@ -270,25 +271,16 @@ export default function Home() {
           Simple Dictionary
         </h2>
 
-        <SearchForm
-          word={word}
-          setWord={setWord}
-          autoComplete={autoComplete}
-          handleKeyDown={handleKeyDown}
-          fetchData={fetchData}
-          lookupWord={lookupWord}
-        />
-
-        <div className="mt-4 text-xs dark:text-gray-400 text-gray-600">
-          By using this service, you agree to the terms and policies outlined in
-          our{" "}
-          <Link
-            href="/info"
-            className="underline dark:text-blue-400 text-blue-600 hover:text-blue-800"
-          >
-            Legal Statement
-          </Link>.
-        </div>
+        <Suspense fallback={<div>Loading...</div>}>
+          <SearchForm
+            word={word}
+            setWord={setWord}
+            autoComplete={autoComplete}
+            handleKeyDown={handleKeyDown}
+            fetchData={fetchData}
+            lookupWord={lookupWord}
+          />
+        </Suspense>
 
         {autoCompleteWords && autoCompleteWords.words.length > 0 && (
           <div className="mt-2 text-sm dark:text-gray-400 text-gray-600">
@@ -318,6 +310,17 @@ export default function Home() {
           </div>
         )}
 
+        <div className="mt-4 text-xs dark:text-gray-400 text-gray-600">
+          By using this service, you agree to the terms and policies outlined in
+          our{" "}
+          <Link
+            href="/info"
+            className="underline dark:text-blue-400 text-blue-600 hover:text-blue-800"
+          >
+            Legal Statement
+          </Link>.
+        </div>
+
         {error && (
           <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg dark:bg-red-700 bg-red-500">
             <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
@@ -345,28 +348,38 @@ export default function Home() {
         />
       )}
 
-      <div
-        className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
-          rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
-        } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
-      >
-        {rawData.map((data, defIndex) => (
-          <DictionaryEntryComponent
-            key={defIndex}
-            data={data}
-            defIndex={defIndex}
-            toggleOpen={toggleOpen}
-            isOpen={isOpen}
-            toggleLanguage={toggleLanguage}
-            isLanguageOpen={isLanguageOpen}
-            source={source}
-            setExpandedCard={setExpandedCard}
-            rawData={rawData}
-            decodeHTML={decodeHTML}
-            license={license}
-          />
-        ))}
-      </div>
+      {rawData.length > 0 && (
+        <div
+          className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
+            rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
+          } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
+        >
+          {rawData.map((data, defIndex) => (
+            <DictionaryEntryComponent
+              key={defIndex}
+              data={data}
+              defIndex={defIndex}
+              toggleOpen={toggleOpen}
+              isOpen={isOpen}
+              toggleLanguage={toggleLanguage}
+              isLanguageOpen={isLanguageOpen}
+              source={source}
+              setExpandedCard={setExpandedCard}
+              rawData={rawData}
+              decodeHTML={decodeHTML}
+              license={license}
+            />
+          ))}
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

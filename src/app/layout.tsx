@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "next-themes"; // not sure how to optimise this
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 
 const Header = dynamic(() => import("@/components/header"));
+const Loading = dynamic(() => import("@/app/loading"));
 
 export const metadata: Metadata = {
   title: "Simple Dictionary",
@@ -21,10 +23,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head />
       <body>
-        <ThemeProvider attribute="class">
-          <Header />
-          {children}
-        </ThemeProvider>
+        <Suspense fallback={<Loading />}>
+          <ThemeProvider attribute="class">
+            <Header />
+            {children}
+          </ThemeProvider>
+        </Suspense>
       </body>
     </html>
   );

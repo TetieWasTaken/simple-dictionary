@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import { type JSX, Suspense } from "react";
 import type { DictionaryEntry, License } from "@/types";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -91,15 +91,17 @@ export default function DictionaryEntryComponent({
           : null}
 
         {data.meanings.map((meaning, index) => (
-          <PartOfSpeech
-            key={index}
-            meaning={meaning}
-            index={index}
-            defIndex={defIndex}
-            toggleOpen={toggleOpen}
-            isOpen={isOpen}
-            decodeHTML={decodeHTML}
-          />
+          <Suspense key={index} fallback={<p>Loading...</p>}>
+            <PartOfSpeech
+              key={index}
+              meaning={meaning}
+              index={index}
+              defIndex={defIndex}
+              toggleOpen={toggleOpen}
+              isOpen={isOpen}
+              decodeHTML={decodeHTML}
+            />
+          </Suspense>
         ))}
 
         <hr className="my-4 dark:border-gray-600 border-gray-400" />

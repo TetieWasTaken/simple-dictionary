@@ -1,4 +1,5 @@
 import dynamic from "next/dynamic";
+import { Suspense } from "react";
 
 const About = dynamic(() => import("@/contents/markdown/about.mdx"));
 const Legal = dynamic(() => import("@/contents/markdown/legal.mdx"));
@@ -15,7 +16,9 @@ export default async function Info() {
             About
           </h2>
           <div className="text-md">
-            <About />
+            <Suspense fallback={<p>Loading...</p>}>
+              <About />
+            </Suspense>
           </div>
         </div>
         <div className="flex flex-col items-center space-y-2 w-1/2 border-gray-400">
@@ -23,7 +26,9 @@ export default async function Info() {
             Legal Statement
           </h2>
           <div className="text-md">
-            <Legal />
+            <Suspense fallback={<p>Loading...</p>}>
+              <Legal />
+            </Suspense>
           </div>
         </div>
       </div>
