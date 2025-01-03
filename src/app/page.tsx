@@ -3,6 +3,8 @@
 // react & next
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
 
 // types
 import type { AutocompleteResult, DictionaryEntry, License } from "@/types";
@@ -12,16 +14,18 @@ import { LOG_LEVEL, LOOKUP_SYNONYMS } from "@/constants";
 import { DictionaryError, ErrorType } from "@/error";
 
 // server side
-import { getData } from "@/getData";
-import { buildTrie, getAutoComplete } from "@/trie";
 import { log } from "@/logger";
 
 // components
-import Theme from "@/components/theme";
-import Github from "@/components/github";
-import SearchForm from "@/components/search";
-import ExpandedCardComponent from "@/components/expandedCard";
-import DictionaryEntryComponent from "@/components/dictionaryEntry";
+const DictionaryEntryComponent = dynamic(
+  () => import("@/components/dictionaryEntry"),
+  { ssr: false },
+);
+const ExpandedCardComponent = dynamic(
+  () => import("@/components/expandedCard"),
+  { ssr: false },
+);
+const SearchForm = dynamic(() => import("@/components/search"));
 
 export default function Home() {
   const searchParams = useSearchParams();
@@ -99,6 +103,7 @@ export default function Home() {
   const fetchData = useCallback(async (word: string) => {
     setIsFetching(true);
     setError(undefined);
+    setAutoCompleteWords(null);
 
     word = sanitiseInput(word);
 
@@ -121,6 +126,7 @@ export default function Home() {
     const startPerf = performance.now();
 
     try {
+      const getData = (await import("@/getData")).getData;
       const res = await getData(word);
 
       if ("error" in res) {
@@ -201,7 +207,11 @@ export default function Home() {
   );
 
   useEffect(() => {
-    buildTrie();
+    const loadTrie = async () => {
+      const buildTrie = (await import("@/trie")).buildTrie;
+      buildTrie();
+    };
+    loadTrie();
   }, []);
 
   const autoComplete = useCallback(async (word: string) => {
@@ -215,6 +225,7 @@ export default function Home() {
     }
 
     const start = performance.now();
+    const getAutoComplete = (await import("@/trie")).getAutoComplete;
     const autoCompleteWordResult = await getAutoComplete(word);
     const end = performance.now();
 
@@ -271,12 +282,12 @@ export default function Home() {
         <div className="mt-4 text-xs dark:text-gray-400 text-gray-600">
           By using this service, you agree to the terms and policies outlined in
           our{" "}
-          <a
+          <Link
             href="/info"
             className="underline dark:text-blue-400 text-blue-600 hover:text-blue-800"
           >
             Legal Statement
-          </a>.
+          </Link>.
         </div>
 
         {autoCompleteWords && autoCompleteWords.words.length > 0 && (

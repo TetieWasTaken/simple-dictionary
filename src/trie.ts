@@ -1,7 +1,5 @@
 "use server";
 
-import { promises as fs } from "fs";
-import { distance } from "fastest-levenshtein";
 import { log } from "./logger";
 import { LOG_LEVEL } from "./constants";
 
@@ -100,6 +98,8 @@ export async function buildTrie() {
 
   try {
     log(LOG_LEVEL.DEBUG, "Reading files", "buildTrie()");
+    const fs = (await import("fs")).promises;
+
     const fileContents = await Promise.all(
       files.map(({ filePath }) =>
         fs.readFile(process.cwd() + filePath, "utf-8")
@@ -150,6 +150,8 @@ export async function getAutoComplete(word: string) {
 
   const tries = [minTrie, medTrie, maxTrie];
   let words: string[] = [];
+
+  const distance = (await import("fastest-levenshtein")).distance;
 
   for (const trie of tries) {
     const trieWords = trie.getWordsByPrefix(word).filter((w) => w !== word);

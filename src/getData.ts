@@ -1,6 +1,6 @@
 "use server";
 
-import { DictionaryError, ErrorType, serialiseError } from "./error";
+import { DictionaryError, ErrorType } from "./error";
 import type {
   DictionaryEntry,
   DictionaryErrorJSON,
@@ -194,6 +194,7 @@ export const getData = async (
       try {
         return await fetchFromWiktionary(word);
       } catch (error) {
+        const serialiseError = (await import("./error")).serialiseError;
         if (error instanceof DictionaryError) {
           if (error.type !== ErrorType.NotFound) {
             log(
@@ -213,6 +214,7 @@ export const getData = async (
         }
       }
     } else {
+      const serialiseError = (await import("./error")).serialiseError;
       log(
         LOG_LEVEL.ERROR,
         `Failed to fetch data from dictionary API for word: ${word}. Status: ${res.status}`,

@@ -1,4 +1,4 @@
-import { DictionaryErrorJSON } from "./types";
+import type { DictionaryErrorJSON } from "./types";
 
 export enum ErrorType {
   NotFound = "Word not found",

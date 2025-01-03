@@ -1,7 +1,12 @@
 import type { JSX } from "react";
-import { RiArrowDropDownLine } from "react-icons/ri";
 import type { DictionaryEntry, License } from "@/types";
-import PartOfSpeech from "./partOfSpeech";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const PartOfSpeech = dynamic(() => import("./partOfSpeech"));
+const RiArrowDropDownLine = dynamic(() =>
+  import("react-icons/ri").then((mod) => mod.RiArrowDropDownLine)
+);
 
 interface DictionaryEntryProps {
   data: DictionaryEntry;
@@ -102,7 +107,7 @@ export default function DictionaryEntryComponent({
         {source && (
           <p className="text-sm dark:text-gray-400 text-gray-600">
             Definition source:{" "}
-            <a
+            <Link
               href={source}
               target="_blank"
               rel="noopener noreferrer"
@@ -110,14 +115,14 @@ export default function DictionaryEntryComponent({
               onClick={(e) => e.stopPropagation()}
             >
               {source}
-            </a>
+            </Link>
             {!data.isManualSearch && (
               <>
                 {" "}
                 <span className="dark:text-gray-400 text-gray-600">
                   |
                 </span>{" "}
-                <a
+                <Link
                   href="https://dictionaryapi.dev/"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -125,7 +130,7 @@ export default function DictionaryEntryComponent({
                   onClick={(e) => e.stopPropagation()}
                 >
                   dictionaryapi.dev
-                </a>
+                </Link>
               </>
             )}
           </p>
@@ -134,7 +139,7 @@ export default function DictionaryEntryComponent({
         {license && (
           <p className="text-sm dark:text-gray-400 text-gray-600">
             Definition license:{" "}
-            <a
+            <Link
               href={license.url}
               target="_blank"
               rel="noopener noreferrer"
@@ -142,7 +147,7 @@ export default function DictionaryEntryComponent({
               onClick={(e) => e.stopPropagation()}
             >
               {license.name}
-            </a>
+            </Link>
           </p>
         )}
 
@@ -153,39 +158,39 @@ export default function DictionaryEntryComponent({
             {data.phonetics[0].sourceUrl && (
               <p className="text-sm dark:text-gray-400 text-gray-600">
                 Phonetics Source:{" "}
-                <a
+                <Link
                   href={data.phonetics[0].sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"
                 >
                   {data.phonetics[0].sourceUrl}
-                </a>{" "}
+                </Link>{" "}
                 <span className="dark:text-gray-400 text-gray-600">
                   |
                 </span>{" "}
-                <a
+                <Link
                   href="https://dictionaryapi.dev/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"
                 >
                   dictionaryapi.dev
-                </a>
+                </Link>
               </p>
             )}
 
             {data.phonetics[0].license && (
               <p className="text-sm dark:text-gray-400 text-gray-600">
                 Phonetics License:{" "}
-                <a
+                <Link
                   href={data.phonetics[0].license.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"
                 >
                   {data.phonetics[0].license.name}
-                </a>
+                </Link>
               </p>
             )}
           </div>

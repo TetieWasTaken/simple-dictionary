@@ -1,6 +1,10 @@
 import type { JSX } from "react";
 import type { Meaning } from "@/types";
-import { RiArrowDropDownLine } from "react-icons/ri";
+import dynamic from "next/dynamic";
+
+const RiArrowDropDownLine = dynamic(() =>
+  import("react-icons/ri").then((mod) => mod.RiArrowDropDownLine)
+);
 
 interface PartOfSpeechProps {
   meaning: Meaning;

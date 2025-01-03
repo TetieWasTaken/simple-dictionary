@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Header from "@/components/header";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "next-themes"; // not sure how to optimise this
+import dynamic from "next/dynamic";
+
+const Header = dynamic(() => import("@/components/header"));
 
 export const metadata: Metadata = {
   title: "Simple Dictionary",
   description: "Find definitions easily",
+  keywords: ["dictionary", "simple", "easy", "fast"],
+  creator: "TetieWasTaken",
 };
 
 export default function RootLayout({

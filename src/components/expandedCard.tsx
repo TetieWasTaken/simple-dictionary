@@ -1,6 +1,6 @@
 "use client";
 
-import { DictionaryEntry } from "@/types";
+import type { DictionaryEntry } from "@/types";
 import type { JSX } from "react";
 
 interface ExpandedCardProps {

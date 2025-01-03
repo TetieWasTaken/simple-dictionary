@@ -1,4 +1,6 @@
 import type { MDXComponents } from "mdx/types";
+import Image from "next/image";
+import Link from "next/link";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -13,12 +15,12 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
       </h2>
     ),
     p: ({ children }) => (
-      <p className="text-sm font-normal mb-4">
+      <p className="text-sm font-normal mb-4 dark:text-white text-gray-900">
         {children}
       </p>
     ),
     a: ({ children, href }) => (
-      <a
+      <Link
         href={href}
         className="text-blue-200 dark:text-blue-300 hover:underline inline-flex items-center"
         target={href?.startsWith("http") ? "_blank" : undefined}
@@ -27,19 +29,23 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
         {href?.startsWith("http") && (
           <>
-            <img
+            <Image
               src="/external-light.svg"
               alt="External Link"
+              width={16}
+              height={16}
               className="w-4 h-4 ml-1 dark:hidden"
             />
-            <img
+            <Image
               src="/external-dark.svg"
               alt="External Link"
+              width={16}
+              height={16}
               className="w-4 h-4 ml-1 hidden dark:block"
             />
           </>
         )}
-      </a>
+      </Link>
     ),
     ul: ({ children }) => (
       <ul className="ml-4 text-sm dark:text-white text-gray-900 font-normal">

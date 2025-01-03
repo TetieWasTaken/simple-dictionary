@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 
+// todo: placeholder until mounted
 export default function Theme() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
@@ -26,8 +28,24 @@ export default function Theme() {
         }}
       >
         {theme === "dark"
-          ? <img src="/moon.svg" alt="Toggle Dark Mode" className="w-8 h-8" />
-          : <img src="/sun.svg" alt="Toggle Light Mode" className="w-8 h-8" />}
+          ? (
+            <Image
+              src="/moon.svg"
+              alt="Toggle Dark Mode"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+          )
+          : (
+            <Image
+              src="/sun.svg"
+              alt="Toggle Light Mode"
+              width={32}
+              height={32}
+              className="w-8 h-8"
+            />
+          )}
       </button>
     </div>
   );

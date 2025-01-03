@@ -1,5 +1,7 @@
-import About from "@/contents/markdown/about.mdx";
-import Legal from "@/contents/markdown/legal.mdx";
+import dynamic from "next/dynamic";
+
+const About = dynamic(() => import("@/contents/markdown/about.mdx"));
+const Legal = dynamic(() => import("@/contents/markdown/legal.mdx"));
 
 export default async function Info() {
   return (
@@ -9,7 +11,7 @@ export default async function Info() {
       </h1>
       <div className="flex flex-row space-x-4 w-full justify-center mt-4">
         <div className="flex flex-col items-center space-y-2 w-1/2 border-r border-gray-400">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
             About
           </h2>
           <div className="text-md">
@@ -17,7 +19,7 @@ export default async function Info() {
           </div>
         </div>
         <div className="flex flex-col items-center space-y-2 w-1/2 border-gray-400">
-          <h2 className="text-2xl font-semibold">
+          <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
             Legal Statement
           </h2>
           <div className="text-md">
