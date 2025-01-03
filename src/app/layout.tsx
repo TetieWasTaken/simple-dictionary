@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/header";
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   title: "Simple Dictionary",
@@ -13,10 +14,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head />
       <body>
-        <Header />
-        {children}
+        <ThemeProvider attribute="class">
+          <Header />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

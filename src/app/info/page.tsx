@@ -9,7 +9,7 @@ export default async function Info() {
       </h1>
       <div className="flex flex-row space-x-4 w-full justify-center mt-4">
         <div className="flex flex-col items-center space-y-2 w-1/2 border-r border-gray-400">
-          <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
+          <h2 className="text-2xl font-semibold">
             About
           </h2>
           <div className="text-md">
@@ -17,7 +17,7 @@ export default async function Info() {
           </div>
         </div>
         <div className="flex flex-col items-center space-y-2 w-1/2 border-gray-400">
-          <h2 className="text-2xl font-semibold dark:text-white text-gray-900">
+          <h2 className="text-2xl font-semibold">
             Legal Statement
           </h2>
           <div className="text-md">

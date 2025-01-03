@@ -1,31 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
-// todo: fix flicker on page load
 export default function Theme() {
-  const [theme, setTheme] = useState("light");
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem("theme");
-    if (storedTheme) {
-      setTheme(storedTheme);
-    }
+    setMounted(true);
   }, []);
 
-  useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-  }, [theme]);
+  if (!mounted) return null;
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
   };
 
   return (
