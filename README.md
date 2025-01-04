@@ -1,8 +1,10 @@
 # [Simple Dictionary](https://simple-dictionary-mu.vercel.app/)
 
-Simple Dictionary is a [NextJS](https://nextjs.org/)-based dictionary app that provides users with a fast search algorithm to access definitions. It uses [Free Dictionary API](https://dictionaryapi.dev/) and the [Wiktionary API](https://en.wiktionary.org/api/) to get the corresponding definitions, pronunciation, synonyms, antonyms, and examples of the word. Built for [High Seas 2024-2025](https://highseas.hackclub.com/) by [Hack Club](https://hackclub.com/), it has over 25 hours of development time.
+Simple Dictionary is a [NextJS](https://nextjs.org/)-based dictionary app that provides users with a fast search algorithm to access definitions. It uses [Free Dictionary API](https://dictionaryapi.dev/) and the [Wiktionary API](https://en.wiktionary.org/api/) to get the corresponding definitions, pronunciation, synonyms, antonyms, and examples of the word. Built for [High Seas 2024-2025](https://highseas.hackclub.com/) by [Hack Club](https://hackclub.com/). ![Wakatime](https://img.shields.io/endpoint?url=https://waka.hackclub.com/api/compat/shields/v1/U078EKGQW2H/interval:all_time/project:simple-dictionary&label=simple-dictionary&color=white)
 
-The app is hosted on [Vercel](https://vercel.com/) and can be accessed [here](https://simple-dictionary-mu.vercel.app/).
+The app is hosted on [Vercel](https://vercel.com/) and can be accessed at:
+[https://simple-dictionary-mu.vercel.app/](https://simple-dictionary-mu.vercel.app/)
+> An optional `/?w=\<word\>` query parameter can be used to pre-fill the search bar with a word.
 
 ![Usage gif failed to load](./.github/usage.gif)
 
