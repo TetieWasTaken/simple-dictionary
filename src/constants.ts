@@ -40,6 +40,6 @@ export enum LOG_LEVEL {
   WARN = 2,
   ERROR = 3,
 }
-export const ACTIVE_LOG_LEVEL: LOG_LEVEL = LOG_LEVEL.DEBUG;
+export const ACTIVE_LOG_LEVEL: LOG_LEVEL = LOG_LEVEL.INFO;
 
 // Useful words for testing: aa, cat, crude, low
