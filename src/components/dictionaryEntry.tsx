@@ -14,6 +14,20 @@ const hasMultipleKeys = (rawData: DictionaryEntry[], defIndex: number) =>
   (rawData[defIndex + 1] &&
     rawData[defIndex + 1].key === rawData[defIndex].key);
 
+const getKeyIndex = (rawData: DictionaryEntry[], defIndex: number) => {
+  let keyIndex = 0;
+
+  for (let i = defIndex - 1; i >= 0; i--) {
+    if (rawData[i].key === rawData[defIndex].key) {
+      keyIndex++;
+    } else {
+      break;
+    }
+  }
+
+  return keyIndex;
+};
+
 interface DictionaryEntryProps {
   data: DictionaryEntry;
   defIndex: number;
@@ -84,7 +98,9 @@ export default function DictionaryEntryComponent({
         {isLanguageOpen(data.key || "en") &&
           hasMultipleKeys(rawData, defIndex) && (
           <p className="text-sm dark:text-gray-400 text-gray-600 mt-2">
-            entry {defIndex + 1}
+            entry {getKeyIndex(rawData, defIndex) + 1} of{"  "}
+            {rawData.filter((entry) => entry.key === rawData[defIndex].key)
+              .length}
           </p>
         )}
         <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
