@@ -125,7 +125,7 @@ const fetchFromWiktionary = async (
     const fs = (await import("fs")).promises;
     const capitalised = await fs.readFile(
       process.cwd() +
-        "/src/contents/dictionary/capitalised.txt",
+        "/public/dictionary/capitalised.txt",
       "utf-8",
     );
     capitalisedWords = capitalised.split("\n");
@@ -281,7 +281,7 @@ export const getData = async (
 export async function getRandomWord(): Promise<string> {
   const fs = (await import("fs")).promises;
   return fs.readFile(
-    process.cwd() + "/src/contents/dictionary/10k_words.txt",
+    process.cwd() + "/public/dictionary/10k_words.txt",
     "utf-8",
   )
     .then((text) => {

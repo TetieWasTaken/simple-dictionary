@@ -16,7 +16,7 @@ const loadFile = (filePath: string): Promise<string[]> => {
 
 const loadDictionaries = async () => {
   try {
-    const basePath = process.cwd() + "/src/contents/dictionary/";
+    const basePath = process.cwd() + "/public/dictionary/";
     const files = ["10k_words.txt", "100k_words.txt", "530k_words.txt"];
 
     const promises = files.map((file) => loadFile(path.join(basePath, file)));
@@ -126,7 +126,7 @@ const storeWords = async () => {
   ).map((word: WordData) => word.word);
 
   const capitalisedPath = process.cwd() +
-    "/src/contents/dictionary/capitalised.txt";
+    "/public/dictionary/capitalised.txt";
   let capitalised: string[] = [];
   try {
     capitalised = (await fs.promises

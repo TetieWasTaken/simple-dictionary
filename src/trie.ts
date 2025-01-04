@@ -92,9 +92,9 @@ export async function buildTrie() {
   const startPerformance = performance.now();
 
   const files = [
-    { filePath: "/src/contents/dictionary/10k_words.txt", trie: minTrie },
-    { filePath: "/src/contents/dictionary/100k_words.txt", trie: medTrie },
-    { filePath: "/src/contents/dictionary/530k_words.txt", trie: maxTrie },
+    { filePath: "/public/dictionary/10k_words.txt", trie: minTrie },
+    { filePath: "/public/dictionary/100k_words.txt", trie: medTrie },
+    { filePath: "/public/dictionary/530k_words.txt", trie: maxTrie },
   ];
 
   try {
