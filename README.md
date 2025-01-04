@@ -29,6 +29,15 @@ Not all information is guaranteed to be accurate! Please verify the information 
 
 ##### Simple Dictionary has not been tested on mobile devices and may not work as intended. It is recommended to use a desktop or laptop for the best experience.
 
+### Autocomplete
+The autocomplete feature uses a trie data structure to provide fast and accurate suggestions, as shown in the image below. Generating autocomplete suggestions within a fraction of a millisecond. (see image below)
+
+<img src="./.github/trie.png" alt="Trie Autocomplete" height="200">
+
+Levenshtein distance is used to provide suggestions for words where the user might have made a typo. Levenshtein distance is slower, but provides more accurate suggestions in cases where the user has made a typo. (see image below)
+
+<img src="./.github/levenshtein.png" alt="Levenshtein Autocomplete" height="200">
+
 ## Local Development
 ### Requirements
 - [NextJS](https://nextjs.org/)
