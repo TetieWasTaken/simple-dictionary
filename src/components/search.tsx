@@ -51,7 +51,7 @@ export default function SearchForm({
   useEffect(() => {
     const fetchRandomWord = async () => {
       setLoadingRandomWord(true);
-      setRandomWord(await getRandomWord());
+      setRandomWord(await getRandomWord(window.location.origin));
       setLoadingRandomWord(false);
       setReload(false);
     };

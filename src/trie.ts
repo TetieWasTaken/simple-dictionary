@@ -79,7 +79,7 @@ const medTrie = new Trie();
 // https://github.com/dwyl/english-words & https://github.com/meetDeveloper/freeDictionaryAPI/
 const maxTrie = new Trie();
 
-export async function buildTrie() {
+export async function buildTrie(windowUrl: string) {
   if (
     minTrie.root.children.size > 0 && medTrie.root.children.size > 0 &&
     maxTrie.root.children.size > 0
@@ -92,19 +92,18 @@ export async function buildTrie() {
   const startPerformance = performance.now();
 
   const files = [
-    { filePath: "/public/dictionary/10k_words.txt", trie: minTrie },
-    { filePath: "/public/dictionary/100k_words.txt", trie: medTrie },
-    { filePath: "/public/dictionary/530k_words.txt", trie: maxTrie },
+    { filePath: windowUrl + "/dictionary/10k_words.txt", trie: minTrie },
+    { filePath: windowUrl + "/dictionary/100k_words.txt", trie: medTrie },
+    { filePath: windowUrl + "/dictionary/530k_words.txt", trie: maxTrie },
   ];
 
   try {
     log(LOG_LEVEL.DEBUG, "Reading files", "buildTrie()");
-    const fs = (await import("fs")).promises;
+
+    const filePromises = files.map((file) => fetch(file.filePath));
 
     const fileContents = await Promise.all(
-      files.map(({ filePath }) =>
-        fs.readFile(process.cwd() + filePath, "utf-8")
-      ),
+      filePromises.map(async (file) => await file.then((res) => res.text())),
     );
 
     log(LOG_LEVEL.DEBUG, "Inserting words into trie", "buildTrie()");

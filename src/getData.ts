@@ -113,6 +113,7 @@ let capitalisedWords: string[] = [];
 
 const fetchFromWiktionary = async (
   word: string,
+  windowUrl: string,
   isRecursion = false,
 ): Promise<DictionaryEntry[]> => {
   log(
@@ -122,13 +123,8 @@ const fetchFromWiktionary = async (
   );
 
   if (capitalisedWords.length === 0) {
-    const fs = (await import("fs")).promises;
-    const capitalised = await fs.readFile(
-      process.cwd() +
-        "/public/dictionary/capitalised.txt",
-      "utf-8",
-    );
-    capitalisedWords = capitalised.split("\n");
+    const capitalised = await fetch(windowUrl + "/dictionary/capitalised.txt");
+    capitalisedWords = (await capitalised.text()).split("\n");
   }
 
   const capitalisedWord = capitalisedWords.find((w) =>
@@ -141,7 +137,7 @@ const fetchFromWiktionary = async (
       `Word is capitalised. Fetching data instead for word: ${capitalisedWord}`,
       "fetchFromWiktionary()",
     );
-    return await fetchFromWiktionary(capitalisedWord, true);
+    return await fetchFromWiktionary(capitalisedWord, windowUrl, true);
   }
 
   await rateLimit();
@@ -167,7 +163,7 @@ const fetchFromWiktionary = async (
 
       if (!isRecursion) {
         const capitalisedWord = word.charAt(0).toUpperCase() + word.slice(1);
-        return await fetchFromWiktionary(capitalisedWord, true);
+        return await fetchFromWiktionary(capitalisedWord, windowUrl, true);
       }
 
       throw new DictionaryError(ErrorType.NotFound);
@@ -203,6 +199,7 @@ const fetchFromWiktionary = async (
 
 export const getData = async (
   word: string,
+  windowUrl: string,
 ): Promise<DictionaryEntry[] | DictionaryErrorJSON> => {
   log(
     LOG_LEVEL.INFO,
@@ -225,7 +222,7 @@ export const getData = async (
       );
 
       try {
-        return await fetchFromWiktionary(word);
+        return await fetchFromWiktionary(word, windowUrl);
       } catch (error) {
         const serialiseError = (await import("./error")).serialiseError;
         if (error instanceof DictionaryError) {
@@ -278,12 +275,9 @@ export const getData = async (
   return data;
 };
 
-export async function getRandomWord(): Promise<string> {
-  const fs = (await import("fs")).promises;
-  return fs.readFile(
-    process.cwd() + "/public/dictionary/10k_words.txt",
-    "utf-8",
-  )
+export async function getRandomWord(source: string): Promise<string> {
+  return fetch(source + "/dictionary/10k_words.txt")
+    .then((res) => res.text())
     .then((text) => {
       const words = text.split("\n");
       return words[Math.floor(Math.random() * words.length)];

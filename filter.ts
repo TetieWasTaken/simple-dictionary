@@ -82,7 +82,7 @@ const main = async () => {
     const word = words10k[i].trim();
 
     try {
-      const meanings = await getData(word);
+      const meanings = await getData(word, process.cwd());
       if ("error" in meanings) {
         console.log("Not in dictionary:", word);
         await storeWord(word, false);

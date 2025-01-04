@@ -51,7 +51,7 @@ function HomeContent() {
   useEffect(() => {
     const loadTrie = async () => {
       const buildTrie = (await import("@/trie")).buildTrie;
-      buildTrie();
+      buildTrie(window.location.origin);
     };
     loadTrie();
   }, []);
@@ -140,7 +140,7 @@ function HomeContent() {
 
     try {
       const getData = (await import("@/getData")).getData;
-      const res = await getData(word);
+      const res = await getData(word, window.location.origin);
 
       if ("error" in res) {
         if (res.type !== ErrorType.NotFound) {
