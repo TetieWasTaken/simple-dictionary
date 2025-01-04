@@ -25,6 +25,9 @@ const ExpandedCardComponent = dynamic(
   () => import("@/components/expandedCard"),
   { ssr: false },
 );
+const ScrollToTop = dynamic(() => import("@/components/scroll"), {
+  ssr: false,
+});
 const SearchForm = dynamic(() => import("@/components/search"));
 
 function HomeContent() {
@@ -259,6 +262,24 @@ function HomeContent() {
   }, []);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
+  const [showScrollToTop, setShowScrollToTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setShowScrollToTop(true);
+      } else {
+        setShowScrollToTop(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
     <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
       <div
@@ -266,6 +287,12 @@ function HomeContent() {
           expandedCard !== null ? "blur-sm" : ""
         }`}
       >
+        {showScrollToTop && (
+          <Suspense fallback={<div>Loading...</div>}>
+            <ScrollToTop />
+          </Suspense>
+        )}
+
         <h2 className="text-3xl font-semibold mb-6 dark:text-white text-gray-900">
           Simple Dictionary
         </h2>
@@ -363,31 +390,46 @@ function HomeContent() {
       )}
 
       {rawData.length > 0 && (
-        <div
-          className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
-            rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
-          } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
-          key={word}
-        >
-          {rawData.map((data, defIndex) => (
-            <Suspense key={defIndex} fallback={<div>Loading...</div>}>
-              <DictionaryEntryComponent
-                key={defIndex}
-                data={data}
-                defIndex={defIndex}
-                toggleOpen={toggleOpen}
-                isOpen={isOpen}
-                toggleLanguage={toggleLanguage}
-                isLanguageOpen={isLanguageOpen}
-                source={source}
-                setExpandedCard={setExpandedCard}
-                rawData={rawData}
-                decodeHTML={decodeHTML}
-                license={license}
-              />
-            </Suspense>
-          ))}
-        </div>
+        <>
+          <div
+            className={`w-full max-w-3xl transition-all duration-300 ease-in-out overflow-hidden ${
+              rawData.length > 0 ? "max-h-max opacity-100" : "max-h-0 opacity-0"
+            } ${expandedCard !== null ? "blur-sm overflow-hidden" : ""}`}
+            key={word}
+          >
+            {rawData.map((data, defIndex) => (
+              <Suspense key={defIndex} fallback={<div>Loading...</div>}>
+                <DictionaryEntryComponent
+                  key={defIndex}
+                  data={data}
+                  defIndex={defIndex}
+                  toggleOpen={toggleOpen}
+                  isOpen={isOpen}
+                  toggleLanguage={toggleLanguage}
+                  isLanguageOpen={isLanguageOpen}
+                  source={source}
+                  setExpandedCard={setExpandedCard}
+                  rawData={rawData}
+                  decodeHTML={decodeHTML}
+                  license={license}
+                />
+              </Suspense>
+            ))}
+          </div>
+          <p className="mt-4 text-sm dark:text-gray-400 text-gray-600">
+            Not what you were looking for?{" "}
+            <Link
+              href={`https://www.google.com/search?q=${
+                encodeURIComponent(
+                  word + " definition",
+                )
+              }`}
+              className="underline dark:text-blue-400 text-blue-600 hover:text-blue-800"
+            >
+              Try searching on Google
+            </Link>
+          </p>
+        </>
       )}
     </div>
   );

@@ -128,7 +128,7 @@ export default function SearchForm({
       <Suspense fallback={<p>Loading...</p>}>
         <button
           type="button"
-          className="fixed bottom-4 right-4 dark:text-white text-gray-900 font-medium rounded-lg text-lg px-6 py-3 dark:bg-blue-600 bg-blue-400 dark:hover:bg-blue-700 hover:bg-blue-500 focus:ring-4 dark:focus:ring-blue-800 focus:ring-blue-600"
+          className="fixed bottom-8 right-8 dark:text-white text-gray-900 font-medium rounded-lg text-lg px-6 py-3 dark:bg-blue-600 bg-blue-400 dark:hover:bg-blue-700 hover:bg-blue-500 focus:ring-4 dark:focus:ring-blue-800 focus:ring-blue-600"
           onClick={() => {
             setWord(randomWord);
             setReload(true);
