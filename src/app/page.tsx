@@ -321,14 +321,29 @@ function HomeContent() {
         </div>
 
         {error && (
-          <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg dark:bg-red-700 bg-red-500">
-            <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
-              {error.type}
-            </h2>
-            <p className="text-lg dark:text-white text-gray-900">
-              {error.message}
+          <>
+            <div className="mt-8 w-full max-w-3xl p-8 rounded-lg shadow-lg dark:bg-red-700 bg-red-500">
+              <h2 className="text-3xl font-bold mb-2 dark:text-white text-gray-900">
+                {error.type}
+              </h2>
+              <p className="text-lg dark:text-white text-gray-900">
+                {error.message}
+              </p>
+            </div>
+            <p>
+              Try searching this on google instead:{" "}
+              <a
+                href={`https://www.google.com/search?q=${
+                  encodeURIComponent(word + " definition")
+                }`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline dark:text-blue-200 text-blue-600 hover:text-blue-800"
+              >
+                {word}
+              </a>
             </p>
-          </div>
+          </>
         )}
       </div>
 

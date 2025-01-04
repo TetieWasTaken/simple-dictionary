@@ -266,7 +266,7 @@ export const getData = async (
   );
 
   data.forEach((entry) => {
-    entry.inaccurate = entry.sourceUrls.length > 1;
+    entry.inaccurate = entry.sourceUrls.length > 1 && data.length > 1;
   });
 
   data.sort((a, b) => {
@@ -277,3 +277,15 @@ export const getData = async (
 
   return data;
 };
+
+export async function getRandomWord(): Promise<string> {
+  const fs = (await import("fs")).promises;
+  return fs.readFile(
+    process.cwd() + "/src/contents/dictionary/10k_words.txt",
+    "utf-8",
+  )
+    .then((text) => {
+      const words = text.split("\n");
+      return words[Math.floor(Math.random() * words.length)];
+    });
+}
