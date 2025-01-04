@@ -6,6 +6,15 @@ The app is hosted on [Vercel](https://vercel.com/) and can be accessed [here](ht
 
 ![Usage gif failed to load](./.github/usage.gif)
 
+### Lighthouse Scores
+
+| Category       | Score                  |
+|----------------|------------------------|
+| Performance    | **100**                |
+| Accessibility  | **100** *(dark mode)* / **96** *(light mode)* |
+| Best Practices | **100**                |
+| SEO            | **100**                |
+
 ### Disclaimer!
 Not all information is guaranteed to be accurate! Please verify the information from a reliable source before using it for any important purposes. Although the information is sourced from reliable sources, data parsing and processing may lead to inaccuracies.
 
