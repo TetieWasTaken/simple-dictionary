@@ -19,7 +19,6 @@ const getColour = async (level: LOG_LEVEL) => {
 
 const colourCache: { [key in LOG_LEVEL]?: string } = {};
 
-// todo: don't send log() calls from client to server if the log level is too low
 export async function log(level: LOG_LEVEL, message: string, source: string) {
   if (level >= ACTIVE_LOG_LEVEL) {
     let colour = colourCache[level];

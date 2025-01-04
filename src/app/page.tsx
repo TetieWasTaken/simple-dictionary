@@ -259,7 +259,6 @@ function HomeContent() {
   }, []);
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
-  // todo: tests, fix cards not transitioning, route handlers?
   return (
     <div className="dark:bg-gray-800 bg-gray-200 min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 ease-in-out">
       <div
