@@ -38,6 +38,8 @@ Levenshtein distance is used to provide suggestions for words where the user mig
 
 <img src="./.github/levenshtein.png" alt="Levenshtein Autocomplete" height="200">
 
+Note that the performance of the autocomplete feature might be hindered by the hosting service. Build and host locally for a better experience.
+
 ## Local Development
 ### Requirements
 - [NextJS](https://nextjs.org/)
