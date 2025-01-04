@@ -29,7 +29,7 @@ Not all information is guaranteed to be accurate! Please verify the information 
 
 ## Local Development
 ### Requirements
-- [Node.js](https://nodejs.org/en/)
+- [NextJS](https://nextjs.org/)
 - [npm](https://www.npmjs.com/)
 - (optional) [Git](https://git-scm.com/)
 
